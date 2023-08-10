@@ -17,7 +17,13 @@ public class AssetSummaryController {
 
     @CrossOrigin
     @PostMapping(value = "/update")
-    public ResponseEntity updatAsset(@RequestBody AssetDTO request) {
+    public ResponseEntity updateAsset(@RequestBody AssetDTO request) {
         return ResponseEntity.ok(assetSummaryService.updateAsset(request));
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "/create")
+    public ResponseEntity createAsset(@RequestBody AssetDTO request) {
+        return ResponseEntity.ok(assetSummaryService.createAsset(request));
     }
 }
