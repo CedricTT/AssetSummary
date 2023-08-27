@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 public class Asset {
@@ -15,6 +17,8 @@ public class Asset {
     private Long id;
 
     private String name;
+
+    private LocalDate date;
 
     private Double credit;
 

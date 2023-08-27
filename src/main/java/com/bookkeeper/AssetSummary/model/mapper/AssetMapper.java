@@ -18,11 +18,11 @@ public class AssetMapper extends BaseMapper<Asset, AssetDTO> {
 
     @Override
     public AssetDTO convertToDto(Asset entity) {
-        AssetDTO assetDTO = new AssetDTO();
+        AssetDTO AssetDTO = new AssetDTO();
 
         if(entity != null)
-            BeanUtils.copyProperties(entity, assetDTO);
+            BeanUtils.copyProperties(entity, AssetDTO);
 
-        return assetDTO;
+        return AssetDTO;
     }
 }
