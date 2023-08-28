@@ -106,6 +106,14 @@ class AssetSummaryServiceTest {
         assertEquals(assetDTOList, assetSummaryService.getUTDAsset(assetNameList));
     }
 
+    @Test
+    void testGetHistoryAsset() {
+        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit2"};
+        List<List<AssetDTO>> assetDTOList = new ArrayList<>();
+
+
+    }
+
     private AssetDTO createAssetDTO(String name, LocalDate date, Double credit, Double debit) {
         AssetDTO assetDTO = new AssetDTO();
         assetDTO.setName(name);
@@ -113,6 +121,14 @@ class AssetSummaryServiceTest {
         assetDTO.setCredit(credit);
         assetDTO.setDebit(debit);
         return assetDTO;
+    }
+
+    private List<AssetDTO> createListOfAssetDTO(String[] names, LocalDate[] dates, Double[] credits, Double[] debit) {
+        List<AssetDTO> list = new ArrayList<>();
+        for(int i = 0; i < 3; i++)
+            list.add(new AssetDTO(names[i], dates[i], credits[i], debit[i]));
+
+        return list;
     }
 
     private Asset createAsset(String name, LocalDate date, Double credit, Double debit) {
