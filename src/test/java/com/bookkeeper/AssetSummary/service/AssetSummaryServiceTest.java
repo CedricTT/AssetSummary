@@ -109,7 +109,20 @@ class AssetSummaryServiceTest {
     @Test
     void testGetHistoryAsset() {
         String[] assetNameList = new String[]{"Bank", "Credit1", "Credit2"};
+        LocalDate[] dates = new LocalDate[]{LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(3)};
+        Double[] credits = new Double[]{30000.0, 15000.0, 20000.0};
+        Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
+
         List<List<AssetDTO>> assetDTOList = new ArrayList<>();
+        List<List<Asset>> assetList = new ArrayList<>();
+
+        assetDTOList.add(createListOfAssetDTO(assetNameList[0], dates, credits, debits));
+        assetDTOList.add(createListOfAssetDTO(assetNameList[1], dates, credits, debits));
+        assetDTOList.add(createListOfAssetDTO(assetNameList[2], dates, credits, debits));
+
+        assetList.add(createListOfAsset(assetNameList[0], dates, credits, debits));
+        assetList.add(createListOfAsset(assetNameList[1], dates, credits, debits));
+        assetList.add(createListOfAsset(assetNameList[2], dates, credits, debits));
 
 
     }
@@ -123,10 +136,10 @@ class AssetSummaryServiceTest {
         return assetDTO;
     }
 
-    private List<AssetDTO> createListOfAssetDTO(String[] names, LocalDate[] dates, Double[] credits, Double[] debit) {
+    private List<AssetDTO> createListOfAssetDTO(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
         List<AssetDTO> list = new ArrayList<>();
         for(int i = 0; i < 3; i++)
-            list.add(new AssetDTO(names[i], dates[i], credits[i], debit[i]));
+            list.add(new AssetDTO(name, dates[i], credits[i], debit[i]));
 
         return list;
     }
@@ -138,5 +151,18 @@ class AssetSummaryServiceTest {
         asset.setCredit(credit);
         asset.setDebit(debit);
         return asset;
+    }
+
+    private List<Asset> createListOfAsset(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
+        List<Asset> list = new ArrayList<>();
+        for(int i = 0; i < 3; i++) {
+            Asset asset = new Asset();
+            asset.setName(name);
+            asset.setDate(dates[i]);
+            asset.setCredit(credits[i]);
+            asset.setDebit(debit[i]);
+            list.add(asset);
+        }
+        return list;
     }
 }
