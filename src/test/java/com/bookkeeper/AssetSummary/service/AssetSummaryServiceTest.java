@@ -89,18 +89,25 @@ class AssetSummaryServiceTest {
 
         String[] assetNameList = new String[]{"Bank", "Credit1", "Credit2"};
         List<AssetDTO> assetDTOList = new ArrayList<>();
-
-        assetDTOList.add(createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0));
-        assetDTOList.add(createAssetDTO("Credit1", LocalDate.now(), 0.0, 500.0));
-        assetDTOList.add(createAssetDTO("Credit2", LocalDate.now(), 0.0, 3000.0));
-
         List<Asset> assetList = new ArrayList<>();
 
-        assetList.add(createAsset("Bank", LocalDate.now(), 10000.0, 0.0));
-        assetList.add(createAsset("Credit1", LocalDate.now(), 0.0, 500.0));
-        assetList.add(createAsset("Credit2", LocalDate.now(), 0.0, 3000.0));
+        AssetDTO bankDTO = createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0);
+        AssetDTO credit1DTO = createAssetDTO("Credit1", LocalDate.now(), 0.0, 500.0);
+        AssetDTO credit2DTO = createAssetDTO("Credit2", LocalDate.now(), 0.0, 3000.0);
+        assetDTOList.add(bankDTO);
+        assetDTOList.add(credit1DTO);
+        assetDTOList.add(credit2DTO);
 
-        Mockito.when(assetRepository.finyByAssetName(assetNameList)).thenReturn(Optional.of(assetList));
+        Asset bank = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
+        Asset credit1 = createAsset("Credit1", LocalDate.now(), 0.0, 500.0);
+        Asset credit2 = createAsset("Credit2", LocalDate.now(), 0.0, 3000.0);
+        assetList.add(bank);
+        assetList.add(credit1);
+        assetList.add(credit2);
+
+        Mockito.when(assetRepository.findTopByNameOrderByDate("Bank")).thenReturn(Optional.of(bank));
+        Mockito.when(assetRepository.findTopByNameOrderByDate("Credit1")).thenReturn(Optional.of(credit1));
+        Mockito.when(assetRepository.findTopByNameOrderByDate("Credit2")).thenReturn(Optional.of(credit2));
         Mockito.when(assetMapper.convertToDtoList(assetList)).thenReturn(assetDTOList);
 
         assertEquals(assetDTOList, assetSummaryService.getUTDAsset(assetNameList));
@@ -114,17 +121,27 @@ class AssetSummaryServiceTest {
         Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
 
         List<List<AssetDTO>> assetDTOList = new ArrayList<>();
-        List<List<Asset>> assetList = new ArrayList<>();
 
-        assetDTOList.add(createListOfAssetDTO(assetNameList[0], dates, credits, debits));
-        assetDTOList.add(createListOfAssetDTO(assetNameList[1], dates, credits, debits));
-        assetDTOList.add(createListOfAssetDTO(assetNameList[2], dates, credits, debits));
+        List<AssetDTO> bankDTO = createListOfAssetDTO(assetNameList[0], dates, credits, debits);
+        List<AssetDTO> credit1DTO = createListOfAssetDTO(assetNameList[1], dates, credits, debits);
+        List<AssetDTO> credit2DTO = createListOfAssetDTO(assetNameList[2], dates, credits, debits);
+        assetDTOList.add(bankDTO);
+        assetDTOList.add(credit1DTO);
+        assetDTOList.add(credit2DTO);
 
-        assetList.add(createListOfAsset(assetNameList[0], dates, credits, debits));
-        assetList.add(createListOfAsset(assetNameList[1], dates, credits, debits));
-        assetList.add(createListOfAsset(assetNameList[2], dates, credits, debits));
+        List<Asset> bank = createListOfAsset(assetNameList[0], dates, credits, debits);
+        List<Asset> credit1 = createListOfAsset(assetNameList[1], dates, credits, debits);
+        List<Asset> credit2 = createListOfAsset(assetNameList[2], dates, credits, debits);
 
+        Mockito.when(assetRepository.findByName(assetNameList[0])).thenReturn(Optional.of(bank));
+        Mockito.when(assetRepository.findByName(assetNameList[1])).thenReturn(Optional.of(credit1));
+        Mockito.when(assetRepository.findByName(assetNameList[2])).thenReturn(Optional.of(credit2));
 
+        Mockito.when(assetMapper.convertToDtoList(bank)).thenReturn(bankDTO);
+        Mockito.when(assetMapper.convertToDtoList(credit1)).thenReturn(credit1DTO);
+        Mockito.when(assetMapper.convertToDtoList(credit2)).thenReturn(credit2DTO);
+
+        assertEquals(assetDTOList, assetSummaryService.getHistoryAsset(assetNameList));
     }
 
     private AssetDTO createAssetDTO(String name, LocalDate date, Double credit, Double debit) {

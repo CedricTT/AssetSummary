@@ -9,6 +9,7 @@ import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -43,8 +44,21 @@ public class AssetSummaryService {
 
     public List<AssetDTO> getUTDAsset(String[] assetNameList) {
 
-        List<Asset> UTDAsset = assetRepository.finyByAssetName(assetNameList).get();
+        List<Asset> UTDAsset = new ArrayList<>();
+
+        for(String name : assetNameList)
+            UTDAsset.add(assetRepository.findTopByNameOrderByDate(name).get());
 
         return assetMapper.convertToDtoList(UTDAsset);
+    }
+
+    public List<List<AssetDTO>> getHistoryAsset(String[] assetNameList) {
+
+        List<List<AssetDTO>> historyAssetList = new ArrayList<>();
+
+        for(String name : assetNameList)
+            historyAssetList.add(assetMapper.convertToDtoList(assetRepository.findByName(name).get()));
+
+        return historyAssetList;
     }
 }

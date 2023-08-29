@@ -11,5 +11,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     Optional<Asset> findByNameAndDate(String name, LocalDate date);
 
-    Optional<List<Asset>> finyByAssetName(String[] assetName);
+    Optional<Asset> findTopByNameOrderByDate(String assetName);
+
+    Optional<List<Asset>> findByName(String name);
 }
