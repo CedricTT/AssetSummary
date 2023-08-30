@@ -1,8 +1,10 @@
 package com.bookkeeper.AssetSummary.service;
 
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
+import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
+import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.FutureDateCreation;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -63,7 +65,7 @@ class AssetSummaryServiceTest {
                 "Asset Already exist in given period of time"
         );
 
-        assertEquals("0030", thrown.getMessage());
+        assertEquals("Asset Already exist in given period of time", thrown.getMessage());
     }
 
     @Test
@@ -76,12 +78,36 @@ class AssetSummaryServiceTest {
                 "Creating future date asset"
         );
 
-        assertEquals("0031", thrown.getMessage());
+        assertEquals("Creating future date asset", thrown.getMessage());
     }
 
     @Test
     void testUpdatingAsset() {
+        RecordDTO recordDTO = new RecordDTO("test", "Food", "Credit1", LocalDate.now(), 100.0);
+        AssetDTO assetDTO = createAssetDTO("Credit1", LocalDate.now(), 0.0, 200.0);
+        Asset asset = createAsset("Credit1", LocalDate.now(), 0.0, 100.0);
 
+        Mockito.when(assetRepository.findTopByNameOrderByDate(recordDTO.getPaymentMethod())).thenReturn(Optional.of(asset));
+        asset.setDebit(asset.getDebit() + recordDTO.getAmount());
+        Mockito.when(assetRepository.save(asset)).thenReturn(asset);
+        Mockito.when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+
+        assertEquals(assetDTO, assetSummaryService.updateAsset(recordDTO));
+    }
+
+    @Test
+    void testUpdatingAssetNotFoundAsset() {
+        RecordDTO recordDTO = new RecordDTO("test", "Food", "Credit124", LocalDate.now(), 100.0);
+
+        Mockito.when(assetRepository.findTopByNameOrderByDate(recordDTO.getPaymentMethod())).thenReturn(Optional.empty());
+
+        Exception thrown = assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.updateAsset(recordDTO),
+                "Asset Not Found in given record"
+        );
+
+        assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
 
     @Test
@@ -105,12 +131,31 @@ class AssetSummaryServiceTest {
         assetList.add(credit1);
         assetList.add(credit2);
 
-        Mockito.when(assetRepository.findTopByNameOrderByDate("Bank")).thenReturn(Optional.of(bank));
-        Mockito.when(assetRepository.findTopByNameOrderByDate("Credit1")).thenReturn(Optional.of(credit1));
-        Mockito.when(assetRepository.findTopByNameOrderByDate("Credit2")).thenReturn(Optional.of(credit2));
+        Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[0])).thenReturn(Optional.of(bank));
+        Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[1])).thenReturn(Optional.of(credit1));
+        Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[2])).thenReturn(Optional.of(credit2));
         Mockito.when(assetMapper.convertToDtoList(assetList)).thenReturn(assetDTOList);
 
         assertEquals(assetDTOList, assetSummaryService.getUTDAsset(assetNameList));
+    }
+
+    @Test
+    void testGetUTDAssetNotFound() {
+        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1234"};
+        Asset bank = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
+        Asset credit1 = createAsset("Credit1", LocalDate.now(), 0.0, 500.0);
+
+        Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[0])).thenReturn(Optional.of(bank));
+        Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[1])).thenReturn(Optional.of(credit1));
+        Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[2])).thenReturn(Optional.empty());
+
+        Exception thrown = assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.getUTDAsset(assetNameList),
+                "Asset Not Found in given record"
+        );
+
+        assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
 
     @Test
@@ -142,6 +187,30 @@ class AssetSummaryServiceTest {
         Mockito.when(assetMapper.convertToDtoList(credit2)).thenReturn(credit2DTO);
 
         assertEquals(assetDTOList, assetSummaryService.getHistoryAsset(assetNameList));
+    }
+
+    @Test
+    void testGetHistoryAssetNotFound() {
+        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1342"};
+
+        LocalDate[] dates = new LocalDate[]{LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(3)};
+        Double[] credits = new Double[]{30000.0, 15000.0, 20000.0};
+        Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
+
+        List<Asset> bank = createListOfAsset(assetNameList[0], dates, credits, debits);
+        List<Asset> credit1 = createListOfAsset(assetNameList[1], dates, credits, debits);
+
+        Mockito.when(assetRepository.findByName(assetNameList[0])).thenReturn(Optional.of(bank));
+        Mockito.when(assetRepository.findByName(assetNameList[1])).thenReturn(Optional.of(credit1));
+        Mockito.when(assetRepository.findByName(assetNameList[2])).thenReturn(Optional.empty());
+
+        Exception thrown = assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.getHistoryAsset(assetNameList),
+                "Asset Not Found in given record"
+        );
+
+        assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
 
     private AssetDTO createAssetDTO(String name, LocalDate date, Double credit, Double debit) {

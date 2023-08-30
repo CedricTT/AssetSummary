@@ -1,8 +1,10 @@
 package com.bookkeeper.AssetSummary.service;
 
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
+import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
+import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.FutureDateCreation;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -24,17 +26,23 @@ public class AssetSummaryService {
 
     private final AssetMapper assetMapper;
 
-    public AssetDTO updateAsset(AssetDTO request) {
-        return request;
+    public AssetDTO updateAsset(RecordDTO request) {
+        Double amount = request.getAmount();
+        Asset utdAsset = assetRepository.findTopByNameOrderByDate(request.getPaymentMethod())
+                .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
+
+        utdAsset.setDebit(utdAsset.getDebit() + amount);
+
+        return assetMapper.convertToDto(assetRepository.save(utdAsset));
     }
 
     public AssetDTO createAsset(AssetDTO request) {
 
         if(LocalDate.now().isBefore(request.getDate()))
-            throw new FutureDateCreation("Creating future date asset", "0031");
+            throw new FutureDateCreation("0031","Creating future date asset");
 
         assetRepository.findByNameAndDate(request.getName(), request.getDate()).ifPresent(s -> {
-            throw new AssetAlreadyExisting("Asset Already exist in given period of time", "0030");
+            throw new AssetAlreadyExisting("0030","Asset Already exist in given period of time");
         });
 
         Asset asset = assetRepository.save(assetMapper.convertToEntity(request));
@@ -47,7 +55,8 @@ public class AssetSummaryService {
         List<Asset> UTDAsset = new ArrayList<>();
 
         for(String name : assetNameList)
-            UTDAsset.add(assetRepository.findTopByNameOrderByDate(name).get());
+            UTDAsset.add(assetRepository.findTopByNameOrderByDate(name)
+                    .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record")));
 
         return assetMapper.convertToDtoList(UTDAsset);
     }
@@ -57,7 +66,9 @@ public class AssetSummaryService {
         List<List<AssetDTO>> historyAssetList = new ArrayList<>();
 
         for(String name : assetNameList)
-            historyAssetList.add(assetMapper.convertToDtoList(assetRepository.findByName(name).get()));
+            historyAssetList.add(assetMapper
+                    .convertToDtoList(assetRepository.findByName(name)
+                    .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"))));
 
         return historyAssetList;
     }
