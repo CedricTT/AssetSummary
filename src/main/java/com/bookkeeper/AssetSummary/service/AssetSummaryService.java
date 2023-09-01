@@ -50,7 +50,7 @@ public class AssetSummaryService {
         return assetMapper.convertToDto(asset);
     }
 
-    public List<AssetDTO> getUTDAsset(String[] assetNameList) {
+    public List<AssetDTO> getLatestAsset(String[] assetNameList) {
 
         List<Asset> UTDAsset = new ArrayList<>();
 

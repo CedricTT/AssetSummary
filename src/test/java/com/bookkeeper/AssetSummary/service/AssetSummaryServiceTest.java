@@ -111,7 +111,7 @@ class AssetSummaryServiceTest {
     }
 
     @Test
-    void testGetUTDAsset() {
+    void testGetLatestAsset() {
 
         String[] assetNameList = new String[]{"Bank", "Credit1", "Credit2"};
         List<AssetDTO> assetDTOList = new ArrayList<>();
@@ -136,11 +136,11 @@ class AssetSummaryServiceTest {
         Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[2])).thenReturn(Optional.of(credit2));
         Mockito.when(assetMapper.convertToDtoList(assetList)).thenReturn(assetDTOList);
 
-        assertEquals(assetDTOList, assetSummaryService.getUTDAsset(assetNameList));
+        assertEquals(assetDTOList, assetSummaryService.getLatestAsset(assetNameList));
     }
 
     @Test
-    void testGetUTDAssetNotFound() {
+    void testGetLatestAssetNotFound() {
         String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1234"};
         Asset bank = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
         Asset credit1 = createAsset("Credit1", LocalDate.now(), 0.0, 500.0);
@@ -151,7 +151,7 @@ class AssetSummaryServiceTest {
 
         Exception thrown = assertThrows(
                 AssetNotFound.class,
-                () -> assetSummaryService.getUTDAsset(assetNameList),
+                () -> assetSummaryService.getLatestAsset(assetNameList),
                 "Asset Not Found in given record"
         );
 
