@@ -3,7 +3,9 @@ package com.bookkeeper.AssetSummary.model.mapper;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AssetMapper extends BaseMapper<Asset, AssetDTO> {
 
     @Override
