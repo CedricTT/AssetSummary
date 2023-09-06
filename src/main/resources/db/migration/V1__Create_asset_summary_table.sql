@@ -1,5 +1,5 @@
 create table ASSET (
-    ID bigint not null,
+    ID bigint not null PRIMARY KEY,
     NAME varchar(100) not null,
     DATE DATE not null,
     CREDIT DOUBLE PRECISION not null,
