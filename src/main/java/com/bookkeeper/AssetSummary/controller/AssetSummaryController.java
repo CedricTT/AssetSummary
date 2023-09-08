@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -34,8 +36,13 @@ public class AssetSummaryController {
 
     @CrossOrigin
     @GetMapping(value = "/asset")
-    public ResponseEntity<List<AssetDTO>> getLatestAsset(@RequestParam String[] asset_names) {
+    public ResponseEntity<Map<String, Object>> getAsset(@RequestParam String[] asset_names) {
+        Map<String, Object> responseMap = new HashMap<>();
         log.info("Getting asset name: {}", Arrays.toString(asset_names));
-        return ResponseEntity.ok(assetSummaryService.getLatestAsset(asset_names));
+        List<AssetDTO> latestAsset = assetSummaryService.getLatestAsset(asset_names);
+        responseMap.put("CurrentMonth", latestAsset);
+        List<List<AssetDTO>> historyAsset = assetSummaryService.getHistoryAsset(asset_names);
+        responseMap.put("HistoryData", historyAsset);
+        return ResponseEntity.ok(responseMap);
     }
 }

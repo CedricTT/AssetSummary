@@ -15,6 +15,8 @@ public class AssetDTO {
 
     private LocalDate date;
 
+    private String type;
+
     private Double credit;
 
     private Double debit;

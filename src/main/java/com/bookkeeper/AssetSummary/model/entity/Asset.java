@@ -23,6 +23,8 @@ public class Asset {
 
     private LocalDate date;
 
+    private String type;
+
     private Double credit;
 
     private Double debit;

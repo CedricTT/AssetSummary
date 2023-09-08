@@ -8,6 +8,7 @@ import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.FutureDateCreation;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class AssetSummaryService {
 
     public AssetSummaryService(AssetRepository assetRepository, AssetMapper assetMapper) {
@@ -64,6 +66,8 @@ public class AssetSummaryService {
     public List<List<AssetDTO>> getHistoryAsset(String[] assetNameList) {
 
         List<List<AssetDTO>> historyAssetList = new ArrayList<>();
+
+        log.info(assetRepository.findByName(assetNameList[0]).toString());
 
         for(String name : assetNameList)
             historyAssetList.add(assetMapper
