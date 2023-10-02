@@ -225,7 +225,7 @@ class AssetSummaryServiceTest {
     private List<AssetDTO> createListOfAssetDTO(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
         List<AssetDTO> list = new ArrayList<>();
         for(int i = 0; i < 3; i++)
-            list.add(new AssetDTO(name, dates[i], credits[i], debit[i]));
+            list.add(new AssetDTO(name, dates[i], "test", credits[i], debit[i]));
 
         return list;
     }
