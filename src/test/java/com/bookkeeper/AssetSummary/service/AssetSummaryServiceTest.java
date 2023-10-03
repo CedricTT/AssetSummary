@@ -225,7 +225,7 @@ class AssetSummaryServiceTest {
         Mockito.when(assetRepository.findByName("Bank")).thenReturn(Optional.of(bankAsset));
         Mockito.when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
 
-        assertEquals(assetSummaryService.getAssetByName(assetName), bankAssetDTO);
+        assertEquals(bankAssetDTO, assetSummaryService.getAssetByName(assetName));
     }
 
     @Test
