@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ class AssetSummaryServiceTest {
     void testCreateAsset() {
         AssetDTO assetDTO = createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0);
 
-        Asset asset = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
+        Asset asset = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
 
         Mockito.when(assetMapper.convertToEntity(assetDTO)).thenReturn(asset);
         Mockito.when(assetRepository.save(asset)).thenReturn(asset);
@@ -55,7 +56,7 @@ class AssetSummaryServiceTest {
     void testExistingCreation() {
         AssetDTO assetDTO = createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0);
 
-        Asset asset = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
+        Asset asset = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
 
         Mockito.when(assetRepository.findByNameAndDate("Bank", LocalDate.now())).thenReturn(Optional.of(asset));
 
@@ -85,7 +86,7 @@ class AssetSummaryServiceTest {
     void testUpdatingAsset() {
         RecordDTO recordDTO = new RecordDTO("test", "Food", "Credit1", LocalDate.now(), 100.0);
         AssetDTO assetDTO = createAssetDTO("Credit1", LocalDate.now(), 0.0, 200.0);
-        Asset asset = createAsset("Credit1", LocalDate.now(), 0.0, 100.0);
+        Asset asset = createAsset("Credit1", LocalDate.now(), "credit card", 0.0, 100.0, -100.0);
 
         Mockito.when(assetRepository.findTopByNameOrderByDate(recordDTO.getPaymentMethod())).thenReturn(Optional.of(asset));
         asset.setDebit(asset.getDebit() + recordDTO.getAmount());
@@ -124,9 +125,9 @@ class AssetSummaryServiceTest {
         assetDTOList.add(credit1DTO);
         assetDTOList.add(credit2DTO);
 
-        Asset bank = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
-        Asset credit1 = createAsset("Credit1", LocalDate.now(), 0.0, 500.0);
-        Asset credit2 = createAsset("Credit2", LocalDate.now(), 0.0, 3000.0);
+        Asset bank = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
+        Asset credit1 = createAsset("Credit1", LocalDate.now(), "credit card", 0.0, 500.0, -500.0);
+        Asset credit2 = createAsset("Credit2", LocalDate.now(), "credit card", 0.0, 3000.0, -3000.0);
         assetList.add(bank);
         assetList.add(credit1);
         assetList.add(credit2);
@@ -142,8 +143,8 @@ class AssetSummaryServiceTest {
     @Test
     void testGetLatestAssetNotFound() {
         String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1234"};
-        Asset bank = createAsset("Bank", LocalDate.now(), 10000.0, 0.0);
-        Asset credit1 = createAsset("Credit1", LocalDate.now(), 0.0, 500.0);
+        Asset bank = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
+        Asset credit1 = createAsset("Credit1", LocalDate.now(), "credit card", 0.0, 500.0, -500.0);
 
         Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[0])).thenReturn(Optional.of(bank));
         Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[1])).thenReturn(Optional.of(credit1));
@@ -158,55 +159,85 @@ class AssetSummaryServiceTest {
         assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
 
+//    @Test
+//    void testGetHistoryAsset() {
+//        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit2"};
+//        LocalDate[] dates = new LocalDate[]{LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(3)};
+//        Double[] credits = new Double[]{30000.0, 15000.0, 20000.0};
+//        Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
+//
+//        List<List<AssetDTO>> assetDTOList = new ArrayList<>();
+//
+//        List<AssetDTO> bankDTO = createListOfAssetDTO(assetNameList[0], dates, credits, debits);
+//        List<AssetDTO> credit1DTO = createListOfAssetDTO(assetNameList[1], dates, credits, debits);
+//        List<AssetDTO> credit2DTO = createListOfAssetDTO(assetNameList[2], dates, credits, debits);
+//        assetDTOList.add(bankDTO);
+//        assetDTOList.add(credit1DTO);
+//        assetDTOList.add(credit2DTO);
+//
+//        List<Asset> bank = createListOfAsset(assetNameList[0], dates, credits, debits);
+//        List<Asset> credit1 = createListOfAsset(assetNameList[1], dates, credits, debits);
+//        List<Asset> credit2 = createListOfAsset(assetNameList[2], dates, credits, debits);
+//
+//        Mockito.when(assetRepository.findByName(assetNameList[0])).thenReturn(Optional.of(bank));
+//        Mockito.when(assetRepository.findByName(assetNameList[1])).thenReturn(Optional.of(credit1));
+//        Mockito.when(assetRepository.findByName(assetNameList[2])).thenReturn(Optional.of(credit2));
+//
+//        Mockito.when(assetMapper.convertToDtoList(bank)).thenReturn(bankDTO);
+//        Mockito.when(assetMapper.convertToDtoList(credit1)).thenReturn(credit1DTO);
+//        Mockito.when(assetMapper.convertToDtoList(credit2)).thenReturn(credit2DTO);
+//
+//        assertEquals(assetDTOList, assetSummaryService.getHistoryAsset(assetNameList));
+//    }
+
+//    @Test
+//    void testGetHistoryAssetNotFound() {
+//        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1342"};
+//
+//        LocalDate[] dates = new LocalDate[]{LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(3)};
+//        Double[] credits = new Double[]{30000.0, 15000.0, 20000.0};
+//        Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
+//
+//        List<Asset> bank = createListOfAsset(assetNameList[0], dates, credits, debits);
+//        List<Asset> credit1 = createListOfAsset(assetNameList[1], dates, credits, debits);
+//
+//        Mockito.when(assetRepository.findByName(assetNameList[0])).thenReturn(Optional.of(bank));
+//        Mockito.when(assetRepository.findByName(assetNameList[1])).thenReturn(Optional.of(credit1));
+//        Mockito.when(assetRepository.findByName(assetNameList[2])).thenReturn(Optional.empty());
+//
+//        Exception thrown = assertThrows(
+//                AssetNotFound.class,
+//                () -> assetSummaryService.getHistoryAsset(assetNameList),
+//                "Asset Not Found in given record"
+//        );
+//
+//        assertEquals("Asset Not Found in given record", thrown.getMessage());
+//    }
+
     @Test
-    void testGetHistoryAsset() {
-        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit2"};
-        LocalDate[] dates = new LocalDate[]{LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(3)};
-        Double[] credits = new Double[]{30000.0, 15000.0, 20000.0};
-        Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
+    void testGetAssetSuccess() {
 
-        List<List<AssetDTO>> assetDTOList = new ArrayList<>();
+        String assetName = "Bank";
 
-        List<AssetDTO> bankDTO = createListOfAssetDTO(assetNameList[0], dates, credits, debits);
-        List<AssetDTO> credit1DTO = createListOfAssetDTO(assetNameList[1], dates, credits, debits);
-        List<AssetDTO> credit2DTO = createListOfAssetDTO(assetNameList[2], dates, credits, debits);
-        assetDTOList.add(bankDTO);
-        assetDTOList.add(credit1DTO);
-        assetDTOList.add(credit2DTO);
+        Asset bankAsset = createAsset("Bank", LocalDate.now(), "bank", 100000.0, 0.0, 100000.0);
+        AssetDTO bankAssetDTO = new AssetDTO("Bank", LocalDate.now(), "bank", 100000.0, 0.0, 100000.0, LocalDateTime.now(), LocalDateTime.now());
 
-        List<Asset> bank = createListOfAsset(assetNameList[0], dates, credits, debits);
-        List<Asset> credit1 = createListOfAsset(assetNameList[1], dates, credits, debits);
-        List<Asset> credit2 = createListOfAsset(assetNameList[2], dates, credits, debits);
+        Mockito.when(assetRepository.findByName("Bank")).thenReturn(Optional.of(bankAsset));
+        Mockito.when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
 
-        Mockito.when(assetRepository.findByName(assetNameList[0])).thenReturn(Optional.of(bank));
-        Mockito.when(assetRepository.findByName(assetNameList[1])).thenReturn(Optional.of(credit1));
-        Mockito.when(assetRepository.findByName(assetNameList[2])).thenReturn(Optional.of(credit2));
-
-        Mockito.when(assetMapper.convertToDtoList(bank)).thenReturn(bankDTO);
-        Mockito.when(assetMapper.convertToDtoList(credit1)).thenReturn(credit1DTO);
-        Mockito.when(assetMapper.convertToDtoList(credit2)).thenReturn(credit2DTO);
-
-        assertEquals(assetDTOList, assetSummaryService.getHistoryAsset(assetNameList));
+        assertEquals(assetSummaryService.getAssetByName(assetName), bankAssetDTO);
     }
 
     @Test
-    void testGetHistoryAssetNotFound() {
-        String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1342"};
+    void testGetAssetNotFound() {
 
-        LocalDate[] dates = new LocalDate[]{LocalDate.now().minusMonths(1), LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(3)};
-        Double[] credits = new Double[]{30000.0, 15000.0, 20000.0};
-        Double[] debits = new Double[]{ 0.0, 0.0, 0.0};
+        String assetName = "Test";
 
-        List<Asset> bank = createListOfAsset(assetNameList[0], dates, credits, debits);
-        List<Asset> credit1 = createListOfAsset(assetNameList[1], dates, credits, debits);
-
-        Mockito.when(assetRepository.findByName(assetNameList[0])).thenReturn(Optional.of(bank));
-        Mockito.when(assetRepository.findByName(assetNameList[1])).thenReturn(Optional.of(credit1));
-        Mockito.when(assetRepository.findByName(assetNameList[2])).thenReturn(Optional.empty());
+        Mockito.when(assetRepository.findByName(assetName)).thenReturn(Optional.empty());
 
         Exception thrown = assertThrows(
                 AssetNotFound.class,
-                () -> assetSummaryService.getHistoryAsset(assetNameList),
+                () -> assetSummaryService.getAssetByName(assetName),
                 "Asset Not Found in given record"
         );
 
@@ -225,17 +256,21 @@ class AssetSummaryServiceTest {
     private List<AssetDTO> createListOfAssetDTO(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
         List<AssetDTO> list = new ArrayList<>();
         for(int i = 0; i < 3; i++)
-            list.add(new AssetDTO(name, dates[i], "test", credits[i], debit[i]));
+            list.add(new AssetDTO(name, dates[i], "test", credits[i], debit[i], 10000.0, LocalDateTime.now(), LocalDateTime.now()));
 
         return list;
     }
 
-    private Asset createAsset(String name, LocalDate date, Double credit, Double debit) {
+    private Asset createAsset(String name, LocalDate date, String type, Double credit, Double debit, Double balance) {
         Asset asset = new Asset();
         asset.setName(name);
         asset.setDate(date);
+        asset.setType(type);
         asset.setCredit(credit);
         asset.setDebit(debit);
+        asset.setBalance(balance);
+        asset.setCreated_Date(LocalDateTime.now());
+        asset.setUpdated_Date(LocalDateTime.now());
         return asset;
     }
 

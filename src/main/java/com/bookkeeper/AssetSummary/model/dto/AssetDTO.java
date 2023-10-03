@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -20,4 +21,10 @@ public class AssetDTO {
     private Double credit;
 
     private Double debit;
+
+    private Double balance;
+
+    private LocalDateTime created_date;
+
+    private LocalDateTime updated_date;
 }

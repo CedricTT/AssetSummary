@@ -63,17 +63,25 @@ public class AssetSummaryService {
         return assetMapper.convertToDtoList(UTDAsset);
     }
 
-    public List<List<AssetDTO>> getHistoryAsset(String[] assetNameList) {
+//    public List<List<AssetDTO>> getHistoryAsset(String[] assetNameList) {
+//
+//        List<List<AssetDTO>> historyAssetList = new ArrayList<>();
+//
+//        log.info(assetRepository.findByName(assetNameList[0]).toString());
+//
+//        for(String name : assetNameList)
+//            historyAssetList.add(assetMapper
+//                    .convertToDtoList(assetRepository.findByName(name)
+//                    .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"))));
+//
+//        return historyAssetList;
+//    }
 
-        List<List<AssetDTO>> historyAssetList = new ArrayList<>();
+    public AssetDTO getAssetByName(String assetName) {
 
-        log.info(assetRepository.findByName(assetNameList[0]).toString());
+        Asset asset = assetRepository.findByName(assetName).
+                orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
 
-        for(String name : assetNameList)
-            historyAssetList.add(assetMapper
-                    .convertToDtoList(assetRepository.findByName(name)
-                    .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"))));
-
-        return historyAssetList;
+        return assetMapper.convertToDto(asset);
     }
 }

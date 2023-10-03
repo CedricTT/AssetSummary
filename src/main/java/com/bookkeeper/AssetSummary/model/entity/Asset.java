@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.Hibernate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -28,6 +29,12 @@ public class Asset {
     private Double credit;
 
     private Double debit;
+
+    private Double balance;
+
+    private LocalDateTime created_Date;
+
+    private LocalDateTime updated_Date;
 
     @Override
     public boolean equals(Object o) {
