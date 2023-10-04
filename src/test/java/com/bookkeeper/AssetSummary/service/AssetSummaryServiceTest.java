@@ -5,7 +5,6 @@ import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
-import com.bookkeeper.AssetSummary.model.exception.FutureDateCreation;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,19 +66,6 @@ class AssetSummaryServiceTest {
         );
 
         assertEquals("Asset Already exist in given period of time", thrown.getMessage());
-    }
-
-    @Test
-    void testCreatingFutureDateAsset() {
-        AssetDTO assetDTO = createAssetDTO("Bank", LocalDate.now().plusDays(1), 10000.0, 0.0);
-
-        Exception thrown = assertThrows(
-                FutureDateCreation.class,
-                () -> assetSummaryService.createAsset(assetDTO),
-                "Creating future date asset"
-        );
-
-        assertEquals("Creating future date asset", thrown.getMessage());
     }
 
     @Test

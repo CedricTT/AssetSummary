@@ -5,13 +5,11 @@ import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
-import com.bookkeeper.AssetSummary.model.exception.FutureDateCreation;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,10 +38,7 @@ public class AssetSummaryService {
 
     public AssetDTO createAsset(AssetDTO request) {
 
-        if(LocalDate.now().isBefore(request.getDate()))
-            throw new FutureDateCreation("0031","Creating future date asset");
-
-        assetRepository.findByNameAndDate(request.getName(), request.getDate()).ifPresent(s -> {
+        assetRepository.findByName(request.getName()).ifPresent(s -> {
             throw new AssetAlreadyExisting("0030","Asset Already exist in given period of time");
         });
 

@@ -52,15 +52,16 @@ class AssetSummaryControllerTest {
 //                .andExpect(status().isBadRequest());
 //    }
 
-//    @Test
-//    void testCreateAssetSuccess() throws Exception {
-//        mvc.perform(MockMvcRequestBuilders
-//                        .post("/api/v1/assetSummary/create")
-//                        .content(asJsonString(new AssetDTO("test", LocalDate.now(), 100.0, 0.0)))
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andDo(print())
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    void testCreateAssetSuccess() throws Exception {
+        String requestBody = "{\"name\": \"bank\", \"type\": \"bank\", \"credit\": 10000.0, \"debit\": 0.0, \"balance\": 10000.0 }";
+        mvc.perform(MockMvcRequestBuilders
+                        .post("/api/v1/assetSummary/create")
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
 
     @Test
     void testCreateAssetBadRequest() throws Exception {

@@ -3,6 +3,7 @@ package com.bookkeeper.AssetSummary.controller;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +28,7 @@ public class AssetSummaryController {
 
     @CrossOrigin
     @PostMapping(value = "/create")
-    public ResponseEntity<AssetDTO> createAsset(@RequestBody AssetDTO request) {
+    public ResponseEntity<AssetDTO> createAsset(@Valid @RequestBody AssetDTO request) {
         log.info("Creating new asset: {}", request.toString());
         return ResponseEntity.ok(assetSummaryService.createAsset(request));
     }
