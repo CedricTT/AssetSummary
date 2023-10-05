@@ -40,9 +40,9 @@ class AssetSummaryServiceTest {
 
     @Test
     void testCreateAsset() {
-        AssetDTO assetDTO = createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0);
+        AssetDTO assetDTO = createAssetDTO("Bank","bank", 10000.0, 0.0, 10000.0);
 
-        Asset asset = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
+        Asset asset = createAsset("Bank","bank", 10000.0, 0.0, 10000.0);
 
         Mockito.when(assetMapper.convertToEntity(assetDTO)).thenReturn(asset);
         Mockito.when(assetRepository.save(asset)).thenReturn(asset);
@@ -53,9 +53,9 @@ class AssetSummaryServiceTest {
 
     @Test
     void testExistingCreation() {
-        AssetDTO assetDTO = createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0);
+        AssetDTO assetDTO = createAssetDTO("Bank","bank", 10000.0, 0.0, 10000.0);
 
-        Asset asset = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
+        Asset asset = createAsset("Bank","bank", 10000.0, 0.0, 10000.0);
 
         Mockito.when(assetRepository.findByNameAndDate("Bank", LocalDate.now())).thenReturn(Optional.of(asset));
 
@@ -71,8 +71,8 @@ class AssetSummaryServiceTest {
     @Test
     void testUpdatingAsset() {
         RecordDTO recordDTO = new RecordDTO("test", "Food", "Credit1", LocalDate.now(), 100.0);
-        AssetDTO assetDTO = createAssetDTO("Credit1", LocalDate.now(), 0.0, 200.0);
-        Asset asset = createAsset("Credit1", LocalDate.now(), "credit card", 0.0, 100.0, -100.0);
+        AssetDTO assetDTO = createAssetDTO("Credit1","credit card", 0.0, 100.0, -100.0);
+        Asset asset = createAsset("Credit1","credit card", 0.0, 100.0, -100.0);
 
         Mockito.when(assetRepository.findTopByNameOrderByDate(recordDTO.getPaymentMethod())).thenReturn(Optional.of(asset));
         asset.setDebit(asset.getDebit() + recordDTO.getAmount());
@@ -104,16 +104,16 @@ class AssetSummaryServiceTest {
         List<AssetDTO> assetDTOList = new ArrayList<>();
         List<Asset> assetList = new ArrayList<>();
 
-        AssetDTO bankDTO = createAssetDTO("Bank", LocalDate.now(), 10000.0, 0.0);
-        AssetDTO credit1DTO = createAssetDTO("Credit1", LocalDate.now(), 0.0, 500.0);
-        AssetDTO credit2DTO = createAssetDTO("Credit2", LocalDate.now(), 0.0, 3000.0);
+        AssetDTO bankDTO = createAssetDTO("Bank","bank", 10000.0, 0.0, 10000.0);
+        AssetDTO credit1DTO = createAssetDTO("Credit1","credit card", 0.0, 500.0, -500.0);
+        AssetDTO credit2DTO = createAssetDTO("Credit2","credit card", 0.0, 3000.0, -3000.0);
         assetDTOList.add(bankDTO);
         assetDTOList.add(credit1DTO);
         assetDTOList.add(credit2DTO);
 
-        Asset bank = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
-        Asset credit1 = createAsset("Credit1", LocalDate.now(), "credit card", 0.0, 500.0, -500.0);
-        Asset credit2 = createAsset("Credit2", LocalDate.now(), "credit card", 0.0, 3000.0, -3000.0);
+        Asset bank = createAsset("Bank","bank", 10000.0, 0.0, 10000.0);
+        Asset credit1 = createAsset("Credit1","credit card", 0.0, 500.0, -500.0);
+        Asset credit2 = createAsset("Credit2","credit card", 0.0, 3000.0, -3000.0);
         assetList.add(bank);
         assetList.add(credit1);
         assetList.add(credit2);
@@ -129,8 +129,8 @@ class AssetSummaryServiceTest {
     @Test
     void testGetLatestAssetNotFound() {
         String[] assetNameList = new String[]{"Bank", "Credit1", "Credit1234"};
-        Asset bank = createAsset("Bank", LocalDate.now(), "bank", 10000.0, 0.0, 10000.0);
-        Asset credit1 = createAsset("Credit1", LocalDate.now(), "credit card", 0.0, 500.0, -500.0);
+        Asset bank = createAsset("Bank", "bank", 10000.0, 0.0, 10000.0);
+        Asset credit1 = createAsset("Credit1", "credit card", 0.0, 500.0, -500.0);
 
         Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[0])).thenReturn(Optional.of(bank));
         Mockito.when(assetRepository.findTopByNameOrderByDate(assetNameList[1])).thenReturn(Optional.of(credit1));
@@ -205,8 +205,8 @@ class AssetSummaryServiceTest {
 
         String assetName = "Bank";
 
-        Asset bankAsset = createAsset("Bank", LocalDate.now(), "bank", 100000.0, 0.0, 100000.0);
-        AssetDTO bankAssetDTO = new AssetDTO("Bank", LocalDate.now(), "bank", 100000.0, 0.0, 100000.0, LocalDateTime.now(), LocalDateTime.now());
+        Asset bankAsset = createAsset("Bank", "bank", 100000.0, 0.0, 100000.0);
+        AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0, 0.0, 100000.0);
 
         Mockito.when(assetRepository.findByName("Bank")).thenReturn(Optional.of(bankAsset));
         Mockito.when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
@@ -230,27 +230,27 @@ class AssetSummaryServiceTest {
         assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
 
-    private AssetDTO createAssetDTO(String name, LocalDate date, Double credit, Double debit) {
+    private AssetDTO createAssetDTO(String name, String type, Double credit, Double debit, Double balance) {
         AssetDTO assetDTO = new AssetDTO();
         assetDTO.setName(name);
-        assetDTO.setDate(date);
+        assetDTO.setType(type);
         assetDTO.setCredit(credit);
         assetDTO.setDebit(debit);
+        assetDTO.setBalance(balance);
         return assetDTO;
     }
 
     private List<AssetDTO> createListOfAssetDTO(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
         List<AssetDTO> list = new ArrayList<>();
         for(int i = 0; i < 3; i++)
-            list.add(new AssetDTO(name, dates[i], "test", credits[i], debit[i], 10000.0, LocalDateTime.now(), LocalDateTime.now()));
+            list.add(new AssetDTO(name, "test", credits[i], debit[i], 10000.0));
 
         return list;
     }
 
-    private Asset createAsset(String name, LocalDate date, String type, Double credit, Double debit, Double balance) {
+    private Asset createAsset(String name, String type, Double credit, Double debit, Double balance) {
         Asset asset = new Asset();
         asset.setName(name);
-        asset.setDate(date);
         asset.setType(type);
         asset.setCredit(credit);
         asset.setDebit(debit);
@@ -265,7 +265,6 @@ class AssetSummaryServiceTest {
         for(int i = 0; i < 3; i++) {
             Asset asset = new Asset();
             asset.setName(name);
-            asset.setDate(dates[i]);
             asset.setCredit(credits[i]);
             asset.setDebit(debit[i]);
             list.add(asset);

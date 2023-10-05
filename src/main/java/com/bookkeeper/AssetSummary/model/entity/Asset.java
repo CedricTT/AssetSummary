@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -21,8 +20,6 @@ public class Asset {
     private Long id;
 
     private String name;
-
-    private LocalDate date;
 
     private String type;
 
@@ -47,5 +44,15 @@ public class Asset {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        created_Date = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updated_Date = LocalDateTime.now();
     }
 }

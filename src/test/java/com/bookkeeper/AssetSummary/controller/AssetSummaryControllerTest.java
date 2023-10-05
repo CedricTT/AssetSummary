@@ -65,8 +65,11 @@ class AssetSummaryControllerTest {
 
     @Test
     void testCreateAssetBadRequest() throws Exception {
+        String requestBody = "{\"type\": \"bank\", \"credit\": 10000.0, \"debit\": 0.0, \"balance\": 10000.0 }";
         mvc.perform(MockMvcRequestBuilders
-                    .post("/api/v1/assetSummary/create"))
+                .post("/api/v1/assetSummary/create")
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
