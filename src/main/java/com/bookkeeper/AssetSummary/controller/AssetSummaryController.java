@@ -29,8 +29,10 @@ public class AssetSummaryController {
     @CrossOrigin
     @PostMapping(value = "/create")
     public ResponseEntity<AssetDTO> createAsset(@Valid @RequestBody AssetDTO request) {
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         log.info("Creating new asset: {}", request.toString());
-        return ResponseEntity.ok(assetSummaryService.createAsset(request));
+        return new ResponseEntity<>(assetSummaryService.createAsset(request), httpHeaders, HttpStatus.OK);
     }
 
 //    @CrossOrigin

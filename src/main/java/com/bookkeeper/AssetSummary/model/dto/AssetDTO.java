@@ -25,4 +25,5 @@ public class AssetDTO {
 
     @NotNull
     private Double balance;
+
 }
