@@ -2,6 +2,7 @@ package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
+import com.bookkeeper.AssetSummary.model.exception.ErrorResponse;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
@@ -12,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -95,16 +97,15 @@ class AssetSummaryControllerTest {
     void testCreateAssetException() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
-        when(assetSummaryService.createAsset(assetDTO)).thenThrow(AssetAlreadyExisting.class);
+        when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset Already exist in given period of time"));
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/assetSummary/create")
                         .content(mapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is5xxServerError())
                 .andReturn();
-        ErrorResult expectedErrorResponse = new ErrorResult("0010", "Asset Already Exist");
+        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Asset Already exist in given period of time");
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        String expectedResponseBody = mapper.writeValueAsString(expectedErrorResponse);
+        String expectedResponseBody = mapper.writeValueAsString(expectedResponse);
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
     }
 

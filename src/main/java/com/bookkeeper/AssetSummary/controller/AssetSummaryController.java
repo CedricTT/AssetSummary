@@ -35,18 +35,6 @@ public class AssetSummaryController {
         return new ResponseEntity<>(assetSummaryService.createAsset(request), httpHeaders, HttpStatus.OK);
     }
 
-//    @CrossOrigin
-//    @GetMapping(value = "/asset")
-//    public ResponseEntity<Map<String, Object>> getAsset(@RequestParam String[] asset_names) {
-//        Map<String, Object> responseMap = new HashMap<>();
-//        log.info("Getting asset name: {}", Arrays.toString(asset_names));
-//        List<AssetDTO> latestAsset = assetSummaryService.getLatestAsset(asset_names);
-//        responseMap.put("CurrentMonth", latestAsset);
-//        List<List<AssetDTO>> historyAsset = assetSummaryService.getHistoryAsset(asset_names);
-//        responseMap.put("HistoryData", historyAsset);
-//        return ResponseEntity.ok(responseMap);
-//    }
-
     @GetMapping(value = "/asset", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<AssetDTO> getAssetByName(@RequestParam String assetName) {
         final HttpHeaders httpHeaders = new HttpHeaders();
