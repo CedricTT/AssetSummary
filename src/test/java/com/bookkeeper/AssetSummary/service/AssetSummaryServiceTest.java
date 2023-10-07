@@ -57,7 +57,7 @@ class AssetSummaryServiceTest {
 
         Asset asset = createAsset("Bank","bank", 10000.0, 0.0, 10000.0);
 
-        Mockito.when(assetRepository.findByNameAndDate("Bank", LocalDate.now())).thenReturn(Optional.of(asset));
+        Mockito.when(assetRepository.findByName("Bank")).thenReturn(Optional.of(asset));
 
         Exception thrown = assertThrows(
                 AssetAlreadyExisting.class,

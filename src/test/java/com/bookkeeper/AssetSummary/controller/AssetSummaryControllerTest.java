@@ -2,6 +2,7 @@ package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
+import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ErrorResponse;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -17,12 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -112,20 +113,49 @@ class AssetSummaryControllerTest {
     @Test
     void testGetAssetByAssetName() throws Exception {
         String assetName = "Bank";
-        mvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/assetSummary/asset")
+        mvc.perform(
+                get("/api/v1/assetSummary/asset")
                 .param(("assetName"), assetName))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void testGetAssetByAssetNameBadRequest() throws Exception {
-        mvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/assetSummary/asset"))
+        mvc.perform(
+                get("/api/v1/assetSummary/asset"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testGetAssetResponse() throws Exception {
+        String assetName = "Bank";
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
+        ObjectMapper mapper = new ObjectMapper();
+        when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetDTO);
+        MvcResult mvcResult = mvc.perform(
+                get("/api/v1/assetSummary/asset")
+                .param(("assetName"), assetName))
+                .andReturn();
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(assetDTO));
+    }
+
+    @Test
+    void testGetAssetException() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String assetName = "Bank";
+        when(assetSummaryService.getAssetByName(assetName)).thenThrow(new AssetNotFound("0031", "Asset Not Found in given record"));
+        MvcResult mvcResult = mvc.perform(
+                        get("/api/v1/assetSummary/asset")
+                                .param(("assetName"), assetName)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Asset Not Found in given record");
+        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+        String expectedResponseBody = mapper.writeValueAsString(expectedResponse);
+        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
     }
 
     public static String asJsonString(final Object obj) {
