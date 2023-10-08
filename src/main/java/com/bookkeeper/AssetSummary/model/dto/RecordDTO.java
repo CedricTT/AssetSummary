@@ -20,4 +20,8 @@ public class RecordDTO {
     private LocalDate date;
 
     private double amount;
+
+    private String paymentFrom;
+
+    private String paymentTo;
 }
