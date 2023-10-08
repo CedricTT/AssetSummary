@@ -6,6 +6,7 @@ import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
+import com.bookkeeper.AssetSummary.model.exception.HttpException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -48,9 +49,9 @@ class AssetSummaryServiceTest {
 
     @Test
     void testCreateAsset() {
-        AssetDTO assetDTO = createAssetDTO("Bank","bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
 
-        Asset asset = createAsset("Bank","bank", 10000.0, 0.0, 10000.0);
+        Asset asset = createAsset("Bank","bank", 10000.0);
 
         Mockito.when(assetMapper.convertToEntity(assetDTO)).thenReturn(asset);
         Mockito.when(assetRepository.save(asset)).thenReturn(asset);
@@ -61,9 +62,9 @@ class AssetSummaryServiceTest {
 
     @Test
     void testExistingCreation() {
-        AssetDTO assetDTO = createAssetDTO("Bank","bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
 
-        Asset asset = createAsset("Bank","bank", 10000.0, 0.0, 10000.0);
+        Asset asset = createAsset("Bank","bank", 10000.0);
 
         Mockito.when(assetRepository.findByName("Bank")).thenReturn(Optional.of(asset));
 
@@ -109,7 +110,7 @@ class AssetSummaryServiceTest {
 
         String assetName = "Bank";
         Double spending = 5000.0;
-        Asset bankAsset = createAsset("Bank", "bank", 100000.0, 0.0, 100000.0);
+        Asset bankAsset = createAsset("Bank", "bank", 100000.0);
         AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0);
         List<RecordDTO> recordDTOList = new ArrayList<>();
         recordDTOList.add(new RecordDTO("Bank exp 1", "test", "FPS", LocalDate.now(), 2500.0, "Bank", "Other"));
@@ -140,23 +141,24 @@ class AssetSummaryServiceTest {
         assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
 
-    private AssetDTO createAssetDTO(String name, String type, Double credit, Double debit, Double balance) {
-        AssetDTO assetDTO = new AssetDTO();
-        assetDTO.setName(name);
-        assetDTO.setType(type);
-        assetDTO.setBalance(balance);
-        return assetDTO;
+    @Test
+    void testGetAssetRecordException() {
+        String assetName = "Bank";
+        Asset bankAsset = createAsset("Bank", "bank", 100000.0);
+
+        when(assetRepository.findByName(assetName)).thenReturn(Optional.of(bankAsset));
+        when(recordFeignClient.readAssetRecordByName(assetName)).thenReturn(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        Exception thrown = assertThrows(
+            HttpException.class,
+                () -> assetSummaryService.getAssetByName(assetName),
+                "Error occurs when calling record service"
+        );
+
+        assertEquals("Error occurs when calling record service", thrown.getMessage());
     }
 
-    private List<AssetDTO> createListOfAssetDTO(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
-        List<AssetDTO> list = new ArrayList<>();
-        for(int i = 0; i < 3; i++)
-            list.add(new AssetDTO(name, "test", 10000.0));
-
-        return list;
-    }
-
-    private Asset createAsset(String name, String type, Double credit, Double debit, Double balance) {
+    private Asset createAsset(String name, String type, Double balance) {
         Asset asset = new Asset();
         asset.setName(name);
         asset.setType(type);
@@ -164,15 +166,5 @@ class AssetSummaryServiceTest {
         asset.setCreated_Date(LocalDateTime.now());
         asset.setUpdated_Date(LocalDateTime.now());
         return asset;
-    }
-
-    private List<Asset> createListOfAsset(String name, LocalDate[] dates, Double[] credits, Double[] debit) {
-        List<Asset> list = new ArrayList<>();
-        for(int i = 0; i < 3; i++) {
-            Asset asset = new Asset();
-            asset.setName(name);
-            list.add(asset);
-        }
-        return list;
     }
 }

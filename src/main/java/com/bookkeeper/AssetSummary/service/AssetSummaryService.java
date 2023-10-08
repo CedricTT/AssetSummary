@@ -6,11 +6,14 @@ import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
+import com.bookkeeper.AssetSummary.model.exception.HttpException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,14 +21,11 @@ import java.util.List;
 @Slf4j
 public class AssetSummaryService {
 
-    public AssetSummaryService(AssetRepository assetRepository, AssetMapper assetMapper) {
-        this.assetRepository = assetRepository;
-        this.assetMapper = assetMapper;
-    }
+    @Autowired
+    private AssetRepository assetRepository;
 
-    private final AssetRepository assetRepository;
-
-    private final AssetMapper assetMapper;
+    @Autowired
+    private AssetMapper assetMapper;
 
     @Autowired
     private RecordFeignClient recordFeignClient;
@@ -67,10 +67,15 @@ public class AssetSummaryService {
         Asset asset = assetRepository.findByName(assetName).
                 orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
 
+        ResponseEntity<List<RecordDTO>> recordResponse = recordFeignClient.readAssetRecordByName(assetName);
+
+        if(HttpStatus.INTERNAL_SERVER_ERROR == recordResponse.getStatusCode())
+            throw new HttpException("0041", "Error occurs when calling record service");
+
         List<RecordDTO> queryRecord = recordFeignClient.readAssetRecordByName(assetName).getBody();
 
         assetResponse.setAssetDTO(assetMapper.convertToDto(asset));
-        assetResponse.setSpending(queryRecord.stream().mapToDouble(RecordDTO::getAmount).sum());
+        assetResponse.setSpending(queryRecord != null ? queryRecord.stream().mapToDouble(RecordDTO::getAmount).sum() : 0);
 
         return assetResponse;
     }
