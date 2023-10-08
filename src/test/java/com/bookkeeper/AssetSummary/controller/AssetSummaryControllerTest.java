@@ -5,6 +5,7 @@ import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ErrorResponse;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
+import com.bookkeeper.AssetSummary.model.response.AssetResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +48,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetSuccess() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         mvc.perform(post("/api/v1/assetSummary/create")
                         .content(mapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -59,7 +60,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetValidation() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO(null, "bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO(null, "bank", 10000.0);
         mvc.perform(post("/api/v1/assetSummary/create")
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -70,7 +71,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetBusinessLogic() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         mvc.perform(post("/api/v1/assetSummary/create")
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON));
@@ -84,7 +85,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetOutput() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         when(assetSummaryService.createAsset(any())).thenReturn(assetDTO);
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/assetSummary/create")
@@ -97,7 +98,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetException() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset Already exist in given period of time"));
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/assetSummary/create")
@@ -132,14 +133,16 @@ class AssetSummaryControllerTest {
     @Test
     void testGetAssetResponse() throws Exception {
         String assetName = "Bank";
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, 0.0, 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        Double spending = 5000.0;
+        AssetResponse assetResponse = new AssetResponse(assetDTO, spending);
         ObjectMapper mapper = new ObjectMapper();
-        when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetDTO);
+        when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetResponse);
         MvcResult mvcResult = mvc.perform(
                 get("/api/v1/assetSummary/asset")
                 .param(("assetName"), assetName))
                 .andReturn();
-        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(assetDTO));
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(assetResponse));
     }
 
     @Test

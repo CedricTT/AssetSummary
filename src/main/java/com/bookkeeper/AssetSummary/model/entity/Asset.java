@@ -23,10 +23,6 @@ public class Asset {
 
     private String type;
 
-    private Double credit;
-
-    private Double debit;
-
     private Double balance;
 
     private LocalDateTime created_Date;

@@ -18,12 +18,6 @@ public class AssetDTO {
     private String type;
 
     @NotNull
-    private Double credit;
-
-    @NotNull
-    private Double debit;
-
-    @NotNull
     private Double balance;
 
 }
