@@ -77,34 +77,6 @@ class AssetSummaryServiceTest {
         assertEquals("Asset Already exist in given period of time", thrown.getMessage());
     }
 
-//    @Test
-//    void testUpdatingAsset() {
-//        RecordDTO recordDTO = new RecordDTO("test", "Food", "Credit1", LocalDate.now(), 100.0);
-//        AssetDTO assetDTO = createAssetDTO("Credit1","credit card", 0.0, 100.0, -100.0);
-//        Asset asset = createAsset("Credit1","credit card", 0.0, 100.0, -100.0);
-//
-//        Mockito.when(assetRepository.findTopByNameOrderByDate(recordDTO.getPaymentMethod())).thenReturn(Optional.of(asset));
-//        Mockito.when(assetRepository.save(asset)).thenReturn(asset);
-//        Mockito.when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
-//
-//        assertEquals(assetDTO, assetSummaryService.updateAsset(recordDTO));
-//    }
-//
-//    @Test
-//    void testUpdatingAssetNotFoundAsset() {
-//        RecordDTO recordDTO = new RecordDTO("test", "Food", "Credit124", LocalDate.now(), 100.0);
-//
-//        Mockito.when(assetRepository.findTopByNameOrderByDate(recordDTO.getPaymentMethod())).thenReturn(Optional.empty());
-//
-//        Exception thrown = assertThrows(
-//                AssetNotFound.class,
-//                () -> assetSummaryService.updateAsset(recordDTO),
-//                "Asset Not Found in given record"
-//        );
-//
-//        assertEquals("Asset Not Found in given record", thrown.getMessage());
-//    }
-
     @Test
     void testGetAssetSuccess() {
 
@@ -156,6 +128,17 @@ class AssetSummaryServiceTest {
         );
 
         assertEquals("Error occurs when calling record service", thrown.getMessage());
+    }
+
+    @Test
+    void testUpdateAssetSuccess() {
+
+        String assetName = "bank";
+        RecordDTO recordDTO = new RecordDTO("test", "test", "test", LocalDate.now(), 10000.0, "bank", "test");
+        Asset asset = createAsset("bank", "bank account", 30000.0);
+        when(assetRepository.findByName(assetName)).thenReturn(Optional.of(asset));
+
+
     }
 
     private Asset createAsset(String name, String type, Double balance) {

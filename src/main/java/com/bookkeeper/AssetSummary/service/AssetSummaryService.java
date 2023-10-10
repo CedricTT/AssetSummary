@@ -30,13 +30,9 @@ public class AssetSummaryService {
     @Autowired
     private RecordFeignClient recordFeignClient;
 
-//    public AssetDTO updateAsset(RecordDTO request) {
-//        Double amount = request.getAmount();
-//        Asset utdAsset = assetRepository.findTopByNameOrderByDate(request.getPaymentMethod())
-//                .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
-//
-//        return assetMapper.convertToDto(assetRepository.save(utdAsset));
-//    }
+    public AssetDTO updateAsset(RecordDTO request) {
+        return null;
+    }
 
     public AssetDTO createAsset(AssetDTO request) {
 
@@ -48,17 +44,6 @@ public class AssetSummaryService {
 
         return assetMapper.convertToDto(asset);
     }
-
-//    public List<AssetDTO> getLatestAsset(String[] assetNameList) {
-//
-//        List<Asset> UTDAsset = new ArrayList<>();
-//
-//        for(String name : assetNameList)
-//            UTDAsset.add(assetRepository.findTopByNameOrderByDate(name)
-//                    .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record")));
-//
-//        return assetMapper.convertToDtoList(UTDAsset);
-//    }
 
     public AssetResponse getAssetByName(String assetName) {
 
