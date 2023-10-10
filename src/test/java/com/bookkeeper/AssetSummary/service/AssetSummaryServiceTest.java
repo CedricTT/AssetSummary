@@ -1,8 +1,9 @@
 package com.bookkeeper.AssetSummary.service;
 
-import com.bookkeeper.AssetSummary.feign.RecordFeignClient;
+import com.bookkeeper.AssetSummary.client.RecordFeignClient;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
+import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
@@ -130,15 +131,15 @@ class AssetSummaryServiceTest {
 
     @Test
     void testUpdateAssetSuccess() {
-
         String assetName = "bank";
-        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0);
+        LocalDateTime requestTime = LocalDateTime.now();
+        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
         Asset asset = createAsset("bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
         when(assetRepository.findByName(assetName)).thenReturn(Optional.of(asset));
-        HashMap<String, String> resultMap = new HashMap<>();
-        resultMap.put("status", "Success");
-        resultMap.put("current balance", "20000.0");
-        assertEquals(resultMap, assetSummaryService.updateAsset(transactionRecord));
+        asset.setBalance(20000.0);
+        when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+        assertEquals(assetDTO, assetSummaryService.updateAsset(transactionRecord));
     }
 
     private Asset createAsset(String name, String type, Double balance) {

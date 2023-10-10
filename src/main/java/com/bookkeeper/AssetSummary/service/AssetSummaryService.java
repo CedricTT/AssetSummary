@@ -1,8 +1,9 @@
 package com.bookkeeper.AssetSummary.service;
 
-import com.bookkeeper.AssetSummary.feign.RecordFeignClient;
+import com.bookkeeper.AssetSummary.client.RecordFeignClient;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
+import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
@@ -30,10 +31,14 @@ public class AssetSummaryService {
     @Autowired
     private RecordFeignClient recordFeignClient;
 
-    public AssetDTO updateAsset(RecordDTO request) {
-        Asset requestedAsset = assetRepository.findByName(request.getPaymentMethod())
-                .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
+    public AssetDTO updateAsset(TransactionRecord request) {
 
+        Asset requestedAsset = assetRepository.findByName(request.getAssetName())
+                .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
+        requestedAsset.setBalance(requestedAsset.getBalance() + request.getAmount());
+        assetRepository.save(requestedAsset);
+
+        return assetMapper.convertToDto(requestedAsset);
     }
 
     public AssetDTO createAsset(AssetDTO request) {

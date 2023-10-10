@@ -1,4 +1,4 @@
-package com.bookkeeper.AssetSummary.feign;
+package com.bookkeeper.AssetSummary.client;
 
 import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import org.springframework.cloud.openfeign.FeignClient;
