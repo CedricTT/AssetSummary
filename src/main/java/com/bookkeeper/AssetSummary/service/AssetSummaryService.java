@@ -31,7 +31,9 @@ public class AssetSummaryService {
     private RecordFeignClient recordFeignClient;
 
     public AssetDTO updateAsset(RecordDTO request) {
-        return null;
+        Asset requestedAsset = assetRepository.findByName(request.getPaymentMethod())
+                .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
+
     }
 
     public AssetDTO createAsset(AssetDTO request) {

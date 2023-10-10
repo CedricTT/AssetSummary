@@ -22,9 +22,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -134,11 +132,13 @@ class AssetSummaryServiceTest {
     void testUpdateAssetSuccess() {
 
         String assetName = "bank";
-        RecordDTO recordDTO = new RecordDTO("test", "test", "test", LocalDate.now(), 10000.0, "bank", "test");
+        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0);
         Asset asset = createAsset("bank", "bank account", 30000.0);
         when(assetRepository.findByName(assetName)).thenReturn(Optional.of(asset));
-
-
+        HashMap<String, String> resultMap = new HashMap<>();
+        resultMap.put("status", "Success");
+        resultMap.put("current balance", "20000.0");
+        assertEquals(resultMap, assetSummaryService.updateAsset(transactionRecord));
     }
 
     private Asset createAsset(String name, String type, Double balance) {
