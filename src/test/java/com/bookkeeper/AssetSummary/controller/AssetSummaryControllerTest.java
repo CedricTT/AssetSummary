@@ -4,12 +4,14 @@ import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
-import com.bookkeeper.AssetSummary.model.exception.ErrorResponse;
+import com.bookkeeper.AssetSummary.model.response.ErrorResponse;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
+import com.bookkeeper.AssetSummary.model.response.UpdateAssetResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -165,16 +167,54 @@ class AssetSummaryControllerTest {
     }
 
     @Test
-    void testUpdateAssetSuccess() throws Exception{
+    void testUpdateAssetSuccess() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        LocalDateTime requestTime = LocalDateTime.now();
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        LocalDateTime requestTime = LocalDateTime.now().withNano(3);
         TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
+        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
+        when(assetSummaryService.updateAsset(transactionRecord)).thenReturn(assetDTO);
         mvc.perform(post("/api/v1/assetSummary/update")
                         .content(objectMapper.writeValueAsString(transactionRecord))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUpdateValidation() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        LocalDateTime requestTime = LocalDateTime.now();
+        TransactionRecord transactionRecord = new TransactionRecord(null, -10000.0, requestTime);
+        mvc.perform(post("/api/v1/assetSummary/update")
+                        .content(objectMapper.writeValueAsString(transactionRecord))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testUpdateResponse() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        LocalDateTime requestTime = LocalDateTime.now();
+        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
+        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
+        when(assetSummaryService.updateAsset(transactionRecord)).thenReturn(assetDTO);
+        MvcResult mvcResult = mvc.perform(post("/api/v1/assetSummary/update")
+                        .content(objectMapper.writeValueAsString(transactionRecord))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andReturn();
+        UpdateAssetResponse expectedResponse = new UpdateAssetResponse();
+        expectedResponse.setRequestTime(requestTime);
+        expectedResponse.setStatus("SUCCESS");
+        expectedResponse.setCurrentBalance(20000.0);
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
     }
 }

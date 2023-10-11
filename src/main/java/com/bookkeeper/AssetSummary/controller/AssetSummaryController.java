@@ -3,6 +3,7 @@ package com.bookkeeper.AssetSummary.controller;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
+import com.bookkeeper.AssetSummary.model.response.UpdateAssetResponse;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +24,19 @@ public class AssetSummaryController {
 
     @CrossOrigin
     @PostMapping(value = "/update")
-    public ResponseEntity<AssetDTO> updateAsset(@RequestBody TransactionRecord request) {
+    public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody TransactionRecord request) {
+
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(assetSummaryService.updateAsset(request), httpHeaders, HttpStatus.OK);
+
+        AssetDTO updatedAsset = assetSummaryService.updateAsset(request);
+        UpdateAssetResponse updateAssetResponse = UpdateAssetResponse.builder()
+                .currentBalance(updatedAsset.getBalance())
+                .requestTime(request.getRequestTime())
+                .status("SUCCESS")
+                .build();
+
+        return new ResponseEntity<>(updateAssetResponse, httpHeaders, HttpStatus.OK);
     }
 
     @CrossOrigin
