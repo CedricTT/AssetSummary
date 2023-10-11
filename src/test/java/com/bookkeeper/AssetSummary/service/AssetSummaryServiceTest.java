@@ -142,6 +142,22 @@ class AssetSummaryServiceTest {
         assertEquals(assetDTO, assetSummaryService.updateAsset(transactionRecord));
     }
 
+    @Test
+    void testUpdateAssetFail_AssetNotFound() {
+        String assetName = "bank";
+        LocalDateTime requestTime = LocalDateTime.now();
+        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
+        when(assetRepository.findByName(assetName)).thenReturn(Optional.empty());
+
+        Exception thrown = assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.updateAsset(transactionRecord),
+                "Asset Not Found in given record"
+        );
+
+        assertEquals("Asset Not Found in given record", thrown.getMessage());
+    }
+
     private Asset createAsset(String name, String type, Double balance) {
         Asset asset = new Asset();
         asset.setName(name);

@@ -1,6 +1,7 @@
 package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
+import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ErrorResponse;
@@ -19,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -161,11 +164,17 @@ class AssetSummaryControllerTest {
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
     }
 
-    public static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    @Test
+    void testUpdateAssetSuccess() throws Exception{
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        LocalDateTime requestTime = LocalDateTime.now();
+        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
+        mvc.perform(post("/api/v1/assetSummary/update")
+                        .content(objectMapper.writeValueAsString(transactionRecord))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }
