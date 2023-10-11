@@ -102,17 +102,25 @@ class AssetSummaryControllerTest {
 
     @Test
     void testCreateAssetException() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset Already exist in given period of time"));
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/assetSummary/create")
-                        .content(mapper.writeValueAsString(assetDTO))
+                        .content(objectMapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
-        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Asset Already exist in given period of time");
+        ErrorResponse expectedResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("Asset Already exist in given period of time")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        String expectedResponseBody = mapper.writeValueAsString(expectedResponse);
+        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
     }
 
@@ -152,17 +160,25 @@ class AssetSummaryControllerTest {
 
     @Test
     void testGetAssetException() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String assetName = "Bank";
         when(assetSummaryService.getAssetByName(assetName)).thenThrow(new AssetNotFound("0031", "Asset Not Found in given record"));
         MvcResult mvcResult = mvc.perform(
                         get("/api/v1/assetSummary/asset")
                                 .param(("assetName"), assetName)
                                 .contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Asset Not Found in given record");
+                                .andReturn();
+        ErrorResponse expectedResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("Asset Not Found in given record")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        String expectedResponseBody = mapper.writeValueAsString(expectedResponse);
+        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
     }
 
