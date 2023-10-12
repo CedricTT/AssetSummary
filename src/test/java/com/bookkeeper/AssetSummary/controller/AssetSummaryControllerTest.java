@@ -145,17 +145,25 @@ class AssetSummaryControllerTest {
 
     @Test
     void testGetAssetResponse() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String assetName = "Bank";
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         Double spending = 5000.0;
-        AssetResponse assetResponse = new AssetResponse(assetDTO, spending);
-        ObjectMapper mapper = new ObjectMapper();
+        AssetResponse assetResponse = AssetResponse
+                .builder()
+                .assetDTO(assetDTO)
+                .Spending(spending)
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
         when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetResponse);
         MvcResult mvcResult = mvc.perform(
                 get("/api/v1/assetSummary/asset")
                 .param(("assetName"), assetName))
                 .andReturn();
-        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(assetResponse));
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(assetResponse));
     }
 
     @Test
@@ -227,10 +235,13 @@ class AssetSummaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andReturn();
-        UpdateAssetResponse expectedResponse = new UpdateAssetResponse();
-        expectedResponse.setRequestTime(requestTime);
-        expectedResponse.setStatus("SUCCESS");
-        expectedResponse.setCurrentBalance(20000.0);
+        UpdateAssetResponse expectedResponse = UpdateAssetResponse
+                .builder()
+                .currentBalance(20000.0)
+                .status("SUCCESS")
+                .requestTime(requestTime)
+                .build();
+
         assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
     }
 

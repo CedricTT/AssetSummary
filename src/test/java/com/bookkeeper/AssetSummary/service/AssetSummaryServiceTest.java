@@ -88,7 +88,13 @@ class AssetSummaryServiceTest {
         recordDTOList.add(new RecordDTO("Bank exp 2", "test", "FPS", LocalDate.now(), 2500.0, "Bank", "Other"));
         when(recordFeignClient.readAssetRecordByName(assetName)).thenReturn(new ResponseEntity<>(recordDTOList, HttpStatus.OK));
 
-        AssetResponse assetResponse = new AssetResponse(bankAssetDTO, spending);
+        AssetResponse assetResponse = AssetResponse
+                .builder()
+                .assetDTO(bankAssetDTO)
+                .Spending(spending)
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
 
         when(assetRepository.findByName("Bank")).thenReturn(Optional.of(bankAsset));
         when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);

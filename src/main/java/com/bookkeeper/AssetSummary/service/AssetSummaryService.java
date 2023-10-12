@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 @Service
 @Slf4j
@@ -54,8 +55,6 @@ public class AssetSummaryService {
 
     public AssetResponse getAssetByName(String assetName) {
 
-        AssetResponse assetResponse = new AssetResponse();
-
         Asset asset = assetRepository.findByName(assetName).
                 orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
 
@@ -66,9 +65,12 @@ public class AssetSummaryService {
 
         List<RecordDTO> queryRecord = recordFeignClient.readAssetRecordByName(assetName).getBody();
 
-        assetResponse.setAssetDTO(assetMapper.convertToDto(asset));
-        assetResponse.setSpending(queryRecord != null ? queryRecord.stream().mapToDouble(RecordDTO::getAmount).sum() : 0);
-
-        return assetResponse;
+        return AssetResponse
+                .builder()
+                .assetDTO(assetMapper.convertToDto(asset))
+                .Spending(queryRecord != null ? queryRecord.stream().mapToDouble(RecordDTO::getAmount).sum() : 0)
+                .requestTime(LocalDateTime.now().withNano(0))
+                .status("SUCCESS")
+                .build();
     }
 }
