@@ -233,4 +233,29 @@ class AssetSummaryControllerTest {
         expectedResponse.setCurrentBalance(20000.0);
         assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
     }
+
+    @Test
+    void testUpdateException() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        LocalDateTime requestTime = LocalDateTime.now();
+        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
+        when(assetSummaryService.updateAsset(any())).thenThrow(new AssetNotFound("0040", "Asset Not Found in given record"));
+        MvcResult mvcResult = mvc.perform(post("/api/v1/assetSummary/update")
+                        .content(objectMapper.writeValueAsString(transactionRecord))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andReturn();
+        ErrorResponse expectedResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("Asset Not Found in given record")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
+        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
+    }
 }
