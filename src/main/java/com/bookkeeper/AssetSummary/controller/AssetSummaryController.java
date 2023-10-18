@@ -23,7 +23,7 @@ public class AssetSummaryController {
     private final AssetSummaryService assetSummaryService;
 
     @CrossOrigin
-    @PostMapping(value = "/update")
+    @PutMapping
     public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody TransactionRecord request) {
 
         final HttpHeaders httpHeaders = new HttpHeaders();
@@ -40,7 +40,7 @@ public class AssetSummaryController {
     }
 
     @CrossOrigin
-    @PostMapping(value = "/create")
+    @PostMapping
     public ResponseEntity<AssetDTO> createAsset(@Valid @RequestBody AssetDTO request) {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -48,7 +48,7 @@ public class AssetSummaryController {
         return new ResponseEntity<>(assetSummaryService.createAsset(request), httpHeaders, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/asset", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping
     public ResponseEntity<AssetResponse> getAssetByName(@RequestParam String assetName) {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
