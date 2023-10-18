@@ -10,6 +10,5 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class AssetResponse extends BaseResponse{
 
-    AssetDTO assetDTO;
-    Double Spending;
+    AssetDTO asset;
 }

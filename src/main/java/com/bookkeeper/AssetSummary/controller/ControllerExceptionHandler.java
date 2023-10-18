@@ -24,11 +24,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exception, HttpStatus httpStatus, WebRequest request) {
+    private ResponseEntity<ErrorResponse> buildErrorResponse(GlobalException exception, HttpStatus httpStatus, WebRequest request) {
         ErrorResponse errorResponse = ErrorResponse
                 .builder()
                 .HttpStatus(httpStatus.value())
                 .message(exception.getMessage())
+                .code(exception.getCode())
                 .status("FAILED")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();

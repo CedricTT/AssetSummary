@@ -13,5 +13,6 @@ import lombok.experimental.SuperBuilder;
 public class ErrorResponse extends BaseResponse{
     private final int HttpStatus;
     private final String message;
+    private String code;
     private String stackTrace;
 }

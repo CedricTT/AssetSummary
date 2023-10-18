@@ -2,14 +2,11 @@ package com.bookkeeper.AssetSummary.service;
 
 import com.bookkeeper.AssetSummary.client.RecordFeignClient;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
-import com.bookkeeper.AssetSummary.model.dto.RecordDTO;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
-import com.bookkeeper.AssetSummary.model.exception.HttpException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
-import com.bookkeeper.AssetSummary.model.response.AssetResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,10 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -80,25 +74,12 @@ class AssetSummaryServiceTest {
     void testGetAssetSuccess() {
 
         String assetName = "Bank";
-        Double spending = 5000.0;
         Asset bankAsset = createAsset("Bank", "bank", 100000.0);
         AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0);
-        List<RecordDTO> recordDTOList = new ArrayList<>();
-        recordDTOList.add(new RecordDTO("Bank exp 1", "test", "FPS", LocalDate.now(), 2500.0, "Bank", "Other"));
-        recordDTOList.add(new RecordDTO("Bank exp 2", "test", "FPS", LocalDate.now(), 2500.0, "Bank", "Other"));
-        when(recordFeignClient.readAssetRecordByName(assetName)).thenReturn(new ResponseEntity<>(recordDTOList, HttpStatus.OK));
-
-        AssetResponse assetResponse = AssetResponse
-                .builder()
-                .assetDTO(bankAssetDTO)
-                .status("SUCCESS")
-                .requestTime(LocalDateTime.now().withNano(0))
-                .build();
-
         when(assetRepository.findByName("Bank")).thenReturn(Optional.of(bankAsset));
         when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
 
-        assertEquals(assetResponse, assetSummaryService.getAssetByName(assetName));
+        assertEquals(bankAssetDTO, assetSummaryService.getAssetByName(assetName));
     }
 
     @Test

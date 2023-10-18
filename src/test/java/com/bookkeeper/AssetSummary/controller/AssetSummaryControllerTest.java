@@ -89,18 +89,20 @@ class AssetSummaryControllerTest {
 
     @Test
     void testCreateAssetOutput() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         when(assetSummaryService.createAsset(any())).thenReturn(assetDTO);
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/assetSummary")
-                .content(mapper.writeValueAsString(assetDTO))
+                .content(objectMapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         BaseResponse expectedResponse = BaseResponse.builder()
                 .status("SUCCESS").requestTime(LocalDateTime.now().withNano(0))
                 .build();
-        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(expectedResponse));
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
     }
 
     @Test
@@ -160,7 +162,7 @@ class AssetSummaryControllerTest {
                 .status("SUCCESS")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
-        when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetResponse);
+        when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetDTO);
         MvcResult mvcResult = mvc.perform(
                 get("/api/v1/assetSummary")
                 .param(("assetName"), assetName))

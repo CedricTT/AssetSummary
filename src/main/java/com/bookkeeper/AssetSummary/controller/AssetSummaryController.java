@@ -3,6 +3,7 @@ package com.bookkeeper.AssetSummary.controller;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
+import com.bookkeeper.AssetSummary.model.response.BaseResponse;
 import com.bookkeeper.AssetSummary.model.response.UpdateAssetResponse;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
 import jakarta.validation.Valid;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -41,11 +44,16 @@ public class AssetSummaryController {
 
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<AssetDTO> createAsset(@Valid @RequestBody AssetDTO request) {
+    public ResponseEntity<BaseResponse> createAsset(@Valid @RequestBody AssetDTO request) {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         log.info("Creating new asset: {}", request.toString());
-        return new ResponseEntity<>(assetSummaryService.createAsset(request), httpHeaders, HttpStatus.OK);
+        assetSummaryService.createAsset(request);
+        BaseResponse response = BaseResponse.builder()
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+        return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
     }
 
     @GetMapping
@@ -53,7 +61,12 @@ public class AssetSummaryController {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         log.info("Getting asset: {}", assetName);
-        AssetResponse assetResponse = assetSummaryService.getAssetByName(assetName);
+        AssetDTO assetDTO = assetSummaryService.getAssetByName(assetName);
+        AssetResponse assetResponse = AssetResponse.builder()
+                .asset(assetDTO)
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
         return new ResponseEntity<>(assetResponse, httpHeaders, HttpStatus.OK);
     }
 }
