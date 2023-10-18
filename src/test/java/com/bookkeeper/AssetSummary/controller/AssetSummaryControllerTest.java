@@ -4,6 +4,7 @@ import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
+import com.bookkeeper.AssetSummary.model.response.BaseResponse;
 import com.bookkeeper.AssetSummary.model.response.ErrorResponse;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
@@ -96,7 +97,10 @@ class AssetSummaryControllerTest {
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(assetDTO));
+        BaseResponse expectedResponse = BaseResponse.builder()
+                .status("SUCCESS").requestTime(LocalDateTime.now().withNano(0))
+                .build();
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(mapper.writeValueAsString(expectedResponse));
     }
 
     @Test
@@ -114,6 +118,7 @@ class AssetSummaryControllerTest {
         ErrorResponse expectedResponse = ErrorResponse
                 .builder()
                 .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .code("0030")
                 .message("Asset Already exist in given period of time")
                 .status("FAILED")
                 .requestTime(LocalDateTime.now().withNano(0))
@@ -149,11 +154,9 @@ class AssetSummaryControllerTest {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String assetName = "Bank";
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
-        Double spending = 5000.0;
         AssetResponse assetResponse = AssetResponse
                 .builder()
-                .assetDTO(assetDTO)
-                .Spending(spending)
+                .asset(assetDTO)
                 .status("SUCCESS")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
@@ -182,6 +185,7 @@ class AssetSummaryControllerTest {
                 .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message("Asset Not Found in given record")
                 .status("FAILED")
+                .code("0031")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
@@ -262,6 +266,7 @@ class AssetSummaryControllerTest {
                 .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message("Asset Not Found in given record")
                 .status("FAILED")
+                .code("0040")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
