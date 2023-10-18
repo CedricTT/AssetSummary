@@ -29,8 +29,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,7 +53,7 @@ class AssetSummaryControllerTest {
     void testCreateAssetSuccess() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
-        mvc.perform(post("/api/v1/assetSummary/create")
+        mvc.perform(post("/api/v1/assetSummary")
                         .content(mapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -66,7 +65,7 @@ class AssetSummaryControllerTest {
     void testCreateAssetValidation() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AssetDTO assetDTO = new AssetDTO(null, "bank", 10000.0);
-        mvc.perform(post("/api/v1/assetSummary/create")
+        mvc.perform(post("/api/v1/assetSummary")
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -77,7 +76,7 @@ class AssetSummaryControllerTest {
     void testCreateAssetBusinessLogic() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
-        mvc.perform(post("/api/v1/assetSummary/create")
+        mvc.perform(post("/api/v1/assetSummary")
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -93,7 +92,7 @@ class AssetSummaryControllerTest {
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         when(assetSummaryService.createAsset(any())).thenReturn(assetDTO);
         MvcResult mvcResult = mvc.perform(
-                post("/api/v1/assetSummary/create")
+                post("/api/v1/assetSummary")
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -108,7 +107,7 @@ class AssetSummaryControllerTest {
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
         when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset Already exist in given period of time"));
         MvcResult mvcResult = mvc.perform(
-                post("/api/v1/assetSummary/create")
+                post("/api/v1/assetSummary")
                         .content(objectMapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -128,7 +127,7 @@ class AssetSummaryControllerTest {
     void testGetAssetByAssetName() throws Exception {
         String assetName = "Bank";
         mvc.perform(
-                get("/api/v1/assetSummary/asset")
+                get("/api/v1/assetSummary")
                 .param(("assetName"), assetName))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -138,7 +137,7 @@ class AssetSummaryControllerTest {
     @Test
     void testGetAssetByAssetNameBadRequest() throws Exception {
         mvc.perform(
-                get("/api/v1/assetSummary/asset"))
+                get("/api/v1/assetSummary"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -160,7 +159,7 @@ class AssetSummaryControllerTest {
                 .build();
         when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetResponse);
         MvcResult mvcResult = mvc.perform(
-                get("/api/v1/assetSummary/asset")
+                get("/api/v1/assetSummary")
                 .param(("assetName"), assetName))
                 .andReturn();
         assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(assetResponse));
@@ -174,7 +173,7 @@ class AssetSummaryControllerTest {
         String assetName = "Bank";
         when(assetSummaryService.getAssetByName(assetName)).thenThrow(new AssetNotFound("0031", "Asset Not Found in given record"));
         MvcResult mvcResult = mvc.perform(
-                        get("/api/v1/assetSummary/asset")
+                        get("/api/v1/assetSummary")
                                 .param(("assetName"), assetName)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andReturn();
@@ -199,7 +198,7 @@ class AssetSummaryControllerTest {
         TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
         AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
         when(assetSummaryService.updateAsset(transactionRecord)).thenReturn(assetDTO);
-        mvc.perform(post("/api/v1/assetSummary/update")
+        mvc.perform(put("/api/v1/assetSummary")
                         .content(objectMapper.writeValueAsString(transactionRecord))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -214,7 +213,7 @@ class AssetSummaryControllerTest {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         LocalDateTime requestTime = LocalDateTime.now();
         TransactionRecord transactionRecord = new TransactionRecord(null, -10000.0, requestTime);
-        mvc.perform(post("/api/v1/assetSummary/update")
+        mvc.perform(put("/api/v1/assetSummary")
                         .content(objectMapper.writeValueAsString(transactionRecord))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -230,7 +229,7 @@ class AssetSummaryControllerTest {
         TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
         AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
         when(assetSummaryService.updateAsset(transactionRecord)).thenReturn(assetDTO);
-        MvcResult mvcResult = mvc.perform(post("/api/v1/assetSummary/update")
+        MvcResult mvcResult = mvc.perform(put("/api/v1/assetSummary")
                         .content(objectMapper.writeValueAsString(transactionRecord))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -253,7 +252,7 @@ class AssetSummaryControllerTest {
         LocalDateTime requestTime = LocalDateTime.now();
         TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
         when(assetSummaryService.updateAsset(any())).thenThrow(new AssetNotFound("0040", "Asset Not Found in given record"));
-        MvcResult mvcResult = mvc.perform(post("/api/v1/assetSummary/update")
+        MvcResult mvcResult = mvc.perform(put("/api/v1/assetSummary")
                         .content(objectMapper.writeValueAsString(transactionRecord))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
