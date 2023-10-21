@@ -10,6 +10,7 @@ import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
+import com.bookkeeper.AssetSummary.model.response.PaymentRecordResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -171,13 +172,18 @@ class AssetSummaryServiceTest {
                 .description("Interest").category("Investment").paymentMethod("Security")
                 .date(LocalDate.now()).amount(20.0).paymentFrom("Security").paymentTo("Bank")
                 .build());
+        PaymentRecordResponse paymentRecordResponse = PaymentRecordResponse
+                .builder()
+                .queryPaymentRecord(paymentDTOList)
+                .build();
+
         when(assetRepository.findByName(assetName)).thenReturn(Optional.of(bankAsset));
         when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
         when(paymentRecordFeignClient.query(
                 LocalDateTime.now().getYear(),
                 LocalDateTime.now().getMonth().getValue(),
                 assetName))
-                .thenReturn(new ResponseEntity<>(paymentDTOList, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(paymentRecordResponse, HttpStatus.OK));
 
         AssetSummary expectedValue = AssetSummary
                 .builder()
