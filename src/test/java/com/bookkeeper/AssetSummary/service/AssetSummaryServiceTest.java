@@ -1,11 +1,14 @@
 package com.bookkeeper.AssetSummary.service;
 
-import com.bookkeeper.AssetSummary.client.RecordFeignClient;
+import com.bookkeeper.AssetSummary.client.PaymentRecordFeignClient;
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
+import com.bookkeeper.AssetSummary.model.dto.AssetSummary;
+import com.bookkeeper.AssetSummary.model.dto.PaymentDTO;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
+import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +18,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -33,7 +39,7 @@ class AssetSummaryServiceTest {
     private AssetMapper assetMapper;
 
     @Mock
-    private RecordFeignClient recordFeignClient;
+    private PaymentRecordFeignClient paymentRecordFeignClient;
 
     @BeforeEach
     public void setup() {
@@ -142,6 +148,69 @@ class AssetSummaryServiceTest {
         );
 
         assertEquals("Asset Not Found in given record", thrown.getMessage());
+    }
+
+    @Test
+    void testGetAssetSummary() {
+        String assetName = "Bank";
+        Asset bankAsset = createAsset("Bank", "bank", 100000.0);
+        AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0);
+        List<PaymentDTO> paymentDTOList = new ArrayList<>();
+        paymentDTOList.add(PaymentDTO
+                .builder()
+                .description("Lunch").category("Food").paymentMethod("Octopus")
+                .date(LocalDate.now()).amount(50.0).paymentFrom("Bank").paymentTo("Food shop")
+                .build());
+        paymentDTOList.add(PaymentDTO
+                .builder()
+                .description("Train").category("Transportation").paymentMethod("Octopus")
+                .date(LocalDate.now()).amount(20.0).paymentFrom("Bank").paymentTo("train")
+                .build());
+        paymentDTOList.add(PaymentDTO
+                .builder()
+                .description("Interest").category("Investment").paymentMethod("Security")
+                .date(LocalDate.now()).amount(20.0).paymentFrom("Security").paymentTo("Bank")
+                .build());
+        when(assetRepository.findByName(assetName)).thenReturn(Optional.of(bankAsset));
+        when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
+        when(paymentRecordFeignClient.query(
+                LocalDateTime.now().getYear(),
+                LocalDateTime.now().getMonth().getValue(),
+                assetName))
+                .thenReturn(new ResponseEntity<>(paymentDTOList, HttpStatus.OK));
+
+        AssetSummary expectedValue = AssetSummary
+                .builder()
+                .assetDTO(bankAssetDTO)
+                .speeding(70.0)
+                .build();
+
+        assertEquals(expectedValue, assetSummaryService.getAssetSummary(assetName));
+    }
+
+    @Test
+    void testGetAssetSummaryException() {
+        String assetName = "Bank";
+        assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.getAssetSummary(assetName),
+                "Asset Not Found in given record"
+        );
+    }
+
+    @Test
+    void testGetAssetSummaryExternalFail() {
+        String assetName = "Bank";
+        when(paymentRecordFeignClient.query(
+                LocalDateTime.now().getYear(),
+                LocalDateTime.now().getMonth().getValue(),
+                assetName))
+                .thenReturn(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThrows(
+                ExternalSystemException.class,
+                () -> assetSummaryService.getAssetSummary(assetName),
+                "Failed on external system call"
+        );
     }
 
     private Asset createAsset(String name, String type, Double balance) {
