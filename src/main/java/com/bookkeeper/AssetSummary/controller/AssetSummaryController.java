@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/assetSummary")
+@RequestMapping(value = "/api/v1/asset")
 @RequiredArgsConstructor
 public class AssetSummaryController {
 

@@ -207,6 +207,8 @@ class AssetSummaryServiceTest {
     @Test
     void testGetAssetSummaryExternalFail() {
         String assetName = "Bank";
+        Asset bankAsset = createAsset("Bank", "bank", 100000.0);
+        when(assetRepository.findByName(assetName)).thenReturn(Optional.of(bankAsset));
         when(paymentRecordFeignClient.query(
                 LocalDateTime.now().getYear(),
                 LocalDateTime.now().getMonth().getValue(),
