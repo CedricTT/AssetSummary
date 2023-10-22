@@ -1,8 +1,10 @@
 package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
+import com.bookkeeper.AssetSummary.model.dto.AssetSummary;
 import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
+import com.bookkeeper.AssetSummary.model.response.AssetSummaryResponse;
 import com.bookkeeper.AssetSummary.model.response.BaseResponse;
 import com.bookkeeper.AssetSummary.model.response.UpdateAssetResponse;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
@@ -68,5 +70,18 @@ public class AssetSummaryController {
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
         return new ResponseEntity<>(assetResponse, httpHeaders, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/summary")
+    public ResponseEntity<AssetSummaryResponse> getAssetSummary(@RequestParam String assetName) {
+        log.info("Getting asset summary for: {}", assetName);
+        AssetSummary summaryResponse = assetSummaryService.getAssetSummary(assetName);
+        return ResponseEntity.ok().body(AssetSummaryResponse
+                .builder()
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .assetDTO(summaryResponse.getAssetDTO())
+                .speeding(summaryResponse.getSpeeding())
+                .build());
     }
 }

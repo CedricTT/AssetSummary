@@ -311,16 +311,6 @@ class AssetSummaryControllerTest {
     }
 
     @Test
-    void testGetAssetSummary() throws Exception {
-        String assetName = "Bank";
-        mvc.perform(get("/api/v1/asset/summary")
-                .param(("assetName"), assetName))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
     void testGetAssetSummaryValidation() throws Exception {
         mvc.perform(get("/api/v1/asset/summary"))
                 .andDo(print())
@@ -355,7 +345,7 @@ class AssetSummaryControllerTest {
                 .speeding(70.0)
                 .status("SUCCESS")
                 .assetDTO(assetDTO)
-                .requestTime(requestTime)
+                .requestTime(requestTime.withNano(0))
                 .build();
 
         assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
@@ -386,13 +376,14 @@ class AssetSummaryControllerTest {
         String actualResponseBody_AssetNotFound = mvcResult_AssetNotFound.getResponse().getContentAsString();
         String expectedResponseBody_AssetNotFound = objectMapper.writeValueAsString(expectedResponse_AssetNotFound);
         assertThat(actualResponseBody_AssetNotFound).isEqualToIgnoringWhitespace(expectedResponseBody_AssetNotFound);
+    }
 
-        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
-        AssetSummary expectedValue = AssetSummary
-                .builder()
-                .assetDTO(assetDTO)
-                .speeding(70.0)
-                .build();
+    @Test
+    void testGetAssetSummaryExternalException() throws Exception{
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        String assetName = "Bank";
 
         when(assetSummaryService.getAssetSummary(assetName)).thenThrow(new ExternalSystemException("0001", "Failed on external system call"));
 

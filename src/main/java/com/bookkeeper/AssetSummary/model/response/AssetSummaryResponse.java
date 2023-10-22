@@ -11,5 +11,5 @@ import lombok.experimental.SuperBuilder;
 public class AssetSummaryResponse extends BaseResponse {
 
     AssetDTO assetDTO;
-    int speeding;
+    double speeding;
 }
