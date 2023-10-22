@@ -123,32 +123,74 @@ class AssetSummaryServiceTest {
 //    }
 
     @Test
-    void testUpdateAssetSuccess() {
-        String assetName = "bank";
-        LocalDateTime requestTime = LocalDateTime.now();
-        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
-        Asset asset = createAsset("bank", "bank account", 30000.0);
-        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
-        when(assetRepository.findByName(assetName)).thenReturn(Optional.of(asset));
+    void testUpdateAssetFrom() {
+        String assetFrom = "Bank";
+        String assetTo = "Shop";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Food")
+                .paymentMethod("FPS")
+                .amount(10000.0)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
+                .build();
+        Asset asset = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 20000.0);
+
+        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(asset));
+        when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
         asset.setBalance(20000.0);
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
-        assertEquals(assetDTO, assetSummaryService.updateAsset(transactionRecord));
+
+        assertEquals(assetDTO, assetSummaryService.updateAsset(paymentDTO));
     }
 
     @Test
-    void testUpdateAssetFail_AssetNotFound() {
-        String assetName = "bank";
-        LocalDateTime requestTime = LocalDateTime.now();
-        TransactionRecord transactionRecord = new TransactionRecord("bank", -10000.0, requestTime);
-        when(assetRepository.findByName(assetName)).thenReturn(Optional.empty());
+    void testUpdateAssetTo() {
+        String assetTo = "Bank";
+        String assetFrom = "Trader";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Investment")
+                .paymentMethod("Security")
+                .amount(10000.0)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetFrom)
+                .build();
+        Asset asset = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 40000.0);
 
-        Exception thrown = assertThrows(
-                AssetNotFound.class,
-                () -> assetSummaryService.updateAsset(transactionRecord),
-                "Asset Not Found in given record"
-        );
+        when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(asset));
+        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
+        asset.setBalance(40000.0);
+        when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
 
-        assertEquals("Asset Not Found in given record", thrown.getMessage());
+        assertEquals(assetDTO, assetSummaryService.updateAsset(paymentDTO));
+    }
+
+    @Test
+    void testUpdateAsset_AssetNotFound() {
+        String assetFrom = "Bank";
+        String assetTo = "Shop";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Food")
+                .paymentMethod("FPS")
+                .amount(100.0)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
+                .build();
+
+        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
+        when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
+
+        assertEquals(null, assetSummaryService.updateAsset(paymentDTO));
     }
 
     @Test
