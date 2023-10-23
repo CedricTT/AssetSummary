@@ -1,9 +1,7 @@
 package com.bookkeeper.AssetSummary.controller;
 
-import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
-import com.bookkeeper.AssetSummary.model.dto.AssetSummary;
-import com.bookkeeper.AssetSummary.model.dto.PaymentDTO;
-import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
+import com.bookkeeper.AssetSummary.model.dto.*;
+import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
@@ -26,8 +24,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -212,8 +208,8 @@ class AssetSummaryControllerTest {
                 .paymentTo("Friend")
                 .paymentMethod("FPS")
                 .build();
-        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
-        when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(assetDTO);
+        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new Asset()).transactionValue(100.0).build();
+        when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(updatedAsset);
         mvc.perform(put("/api/v1/asset")
                         .content(objectMapper.writeValueAsString(paymentDTO))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -247,7 +243,7 @@ class AssetSummaryControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        LocalDateTime requestTime = LocalDateTime.now();
+
         PaymentDTO paymentDTO = PaymentDTO.builder()
                 .amount(100)
                 .date(LocalDate.now())
@@ -257,8 +253,10 @@ class AssetSummaryControllerTest {
                 .paymentTo("Friend")
                 .paymentMethod("FPS")
                 .build();
-        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
-        when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(assetDTO);
+        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new Asset()).transactionValue(100.0).build();
+
+        when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(updatedAsset);
+
         MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
                         .content(objectMapper.writeValueAsString(paymentDTO))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -266,9 +264,11 @@ class AssetSummaryControllerTest {
                 .andReturn();
         UpdateAssetResponse expectedResponse = UpdateAssetResponse
                 .builder()
-                .currentBalance(20000.0)
+                .transactionValue(100.0)
+                .assetFrom(new Asset())
+                .assetTo(null)
                 .status("SUCCESS")
-                .requestTime(requestTime)
+                .requestTime(LocalDateTime.now().withNano(0))
                 .build();
 
         assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));

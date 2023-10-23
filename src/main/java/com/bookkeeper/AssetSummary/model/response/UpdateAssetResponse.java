@@ -1,5 +1,6 @@
 package com.bookkeeper.AssetSummary.model.response;
 
+import com.bookkeeper.AssetSummary.model.entity.Asset;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -7,5 +8,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class UpdateAssetResponse extends BaseResponse {
-    Double currentBalance;
+
+    Asset assetFrom;
+
+    Asset assetTo;
+
+    Double transactionValue;
 }

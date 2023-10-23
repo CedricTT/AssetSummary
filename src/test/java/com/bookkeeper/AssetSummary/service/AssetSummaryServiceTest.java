@@ -1,10 +1,7 @@
 package com.bookkeeper.AssetSummary.service;
 
 import com.bookkeeper.AssetSummary.client.PaymentRecordFeignClient;
-import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
-import com.bookkeeper.AssetSummary.model.dto.AssetSummary;
-import com.bookkeeper.AssetSummary.model.dto.PaymentDTO;
-import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
+import com.bookkeeper.AssetSummary.model.dto.*;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
@@ -137,14 +134,17 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 20000.0);
 
         when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(asset));
         when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
         asset.setBalance(20000.0);
-        when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+        UpdatedAsset expectResult = UpdatedAsset
+                .builder()
+                .assetFrom(asset)
+                .transactionValue(10000.0)
+                .build();
 
-        assertEquals(assetDTO, assetSummaryService.updateAsset(paymentDTO));
+        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO));
     }
 
     @Test
@@ -159,17 +159,52 @@ class AssetSummaryServiceTest {
                 .paymentMethod("Security")
                 .amount(10000.0)
                 .paymentFrom(assetFrom)
-                .paymentTo(assetFrom)
+                .paymentTo(assetTo)
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 40000.0);
 
         when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(asset));
         when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
         asset.setBalance(40000.0);
-        when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+        UpdatedAsset expectResult = UpdatedAsset
+                .builder()
+                .assetTo(asset)
+                .transactionValue(10000.0)
+                .build();
 
-        assertEquals(assetDTO, assetSummaryService.updateAsset(paymentDTO));
+        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO));
+    }
+
+    @Test
+    void testUpdateAssetBoth() {
+        String assetTo = "Credit Card";
+        String assetFrom = "Bank";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Repayment")
+                .paymentMethod("Fund Transfer")
+                .amount(10000.0)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
+                .build();
+        Asset bank = createAsset("Bank", "bank account", 30000.0);
+        Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
+
+        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(bank));
+        when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(creditCard));
+        bank.setBalance(20000.0);
+        creditCard.setBalance(20000.0);
+
+        UpdatedAsset expectedResult = UpdatedAsset
+                .builder()
+                .assetFrom(bank)
+                .assetTo(creditCard)
+                .transactionValue(10000.0)
+                .build();
+
+        assertEquals(expectedResult, assetSummaryService.updateAsset(paymentDTO));
     }
 
     @Test
@@ -190,7 +225,12 @@ class AssetSummaryServiceTest {
         when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
         when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
 
-        assertEquals(null, assetSummaryService.updateAsset(paymentDTO));
+        UpdatedAsset expectResult = UpdatedAsset
+                .builder()
+                .transactionValue(100.0)
+                .build();
+
+        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO));
     }
 
     @Test

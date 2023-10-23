@@ -1,8 +1,6 @@
 package com.bookkeeper.AssetSummary.controller;
 
-import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
-import com.bookkeeper.AssetSummary.model.dto.AssetSummary;
-import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
+import com.bookkeeper.AssetSummary.model.dto.*;
 import com.bookkeeper.AssetSummary.model.response.AssetResponse;
 import com.bookkeeper.AssetSummary.model.response.AssetSummaryResponse;
 import com.bookkeeper.AssetSummary.model.response.BaseResponse;
@@ -27,24 +25,24 @@ public class AssetSummaryController {
 
     private final AssetSummaryService assetSummaryService;
 
-    @CrossOrigin
     @PutMapping
-    public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody TransactionRecord request) {
+    public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody PaymentDTO request) {
 
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        AssetDTO updatedAsset = assetSummaryService.updateAsset(request);
+        UpdatedAsset updatedAsset = assetSummaryService.updateAsset(request);
         UpdateAssetResponse updateAssetResponse = UpdateAssetResponse.builder()
-                .currentBalance(updatedAsset.getBalance())
-                .requestTime(request.getRequestTime())
+                .assetFrom(updatedAsset.getAssetFrom())
+                .assetTo(updatedAsset.getAssetTo())
+                .transactionValue(updatedAsset.getTransactionValue())
+                .requestTime(LocalDateTime.now().withNano(0))
                 .status("SUCCESS")
                 .build();
 
         return new ResponseEntity<>(updateAssetResponse, httpHeaders, HttpStatus.OK);
     }
 
-    @CrossOrigin
     @PostMapping
     public ResponseEntity<BaseResponse> createAsset(@Valid @RequestBody AssetDTO request) {
         final HttpHeaders httpHeaders = new HttpHeaders();

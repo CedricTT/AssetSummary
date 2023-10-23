@@ -1,10 +1,7 @@
 package com.bookkeeper.AssetSummary.service;
 
 import com.bookkeeper.AssetSummary.client.PaymentRecordFeignClient;
-import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
-import com.bookkeeper.AssetSummary.model.dto.AssetSummary;
-import com.bookkeeper.AssetSummary.model.dto.PaymentDTO;
-import com.bookkeeper.AssetSummary.model.dto.TransactionRecord;
+import com.bookkeeper.AssetSummary.model.dto.*;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
@@ -21,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -35,14 +33,27 @@ public class AssetSummaryService {
     @Autowired
     private PaymentRecordFeignClient paymentRecordFeignClient;
 
-    public AssetDTO updateAsset(TransactionRecord request) {
+    public UpdatedAsset updateAsset(PaymentDTO request) {
 
-        Asset requestedAsset = assetRepository.findByName(request.getAssetName())
-                .orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
-        requestedAsset.setBalance(requestedAsset.getBalance() + request.getAmount());
-        assetRepository.save(requestedAsset);
+        UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
 
-        return assetMapper.convertToDto(requestedAsset);
+        Optional<Asset> assetFrom = assetRepository.findByName(request.getPaymentFrom());
+        assetFrom.ifPresent(asset -> {
+            asset.setBalance(asset.getBalance() - request.getAmount());
+            assetRepository.save(asset);
+            updatedAsset.assetFrom(asset);
+        });
+
+        Optional<Asset> assetTo = assetRepository.findByName(request.getPaymentTo());
+        assetTo.ifPresent(asset -> {
+            asset.setBalance(asset.getBalance() + request.getAmount());
+            assetRepository.save(asset);
+            updatedAsset.assetTo(asset);
+        });
+
+        updatedAsset.transactionValue(request.getAmount());
+
+        return updatedAsset.build();
     }
 
     public AssetDTO createAsset(AssetDTO request) {
