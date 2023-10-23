@@ -41,14 +41,14 @@ public class AssetSummaryService {
         assetFrom.ifPresent(asset -> {
             asset.setBalance(asset.getBalance() - request.getAmount());
             assetRepository.save(asset);
-            updatedAsset.assetFrom(asset);
+            updatedAsset.assetFrom(assetMapper.convertToDto(asset));
         });
 
         Optional<Asset> assetTo = assetRepository.findByName(request.getPaymentTo());
         assetTo.ifPresent(asset -> {
             asset.setBalance(asset.getBalance() + request.getAmount());
             assetRepository.save(asset);
-            updatedAsset.assetTo(asset);
+            updatedAsset.assetTo(assetMapper.convertToDto(asset));
         });
 
         updatedAsset.transactionValue(request.getAmount());

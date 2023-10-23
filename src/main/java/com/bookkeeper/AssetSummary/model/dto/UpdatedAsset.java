@@ -1,6 +1,5 @@
 package com.bookkeeper.AssetSummary.model.dto;
 
-import com.bookkeeper.AssetSummary.model.entity.Asset;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class UpdatedAsset {
 
-    Asset assetFrom;
+    AssetDTO assetFrom;
 
-    Asset assetTo;
+    AssetDTO assetTo;
 
     Double transactionValue;
 }

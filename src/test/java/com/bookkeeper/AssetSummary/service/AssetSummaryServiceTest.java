@@ -134,13 +134,16 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0);
 
         when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(asset));
         when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
-        asset.setBalance(20000.0);
+        when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+
+        assetDTO.setBalance(20000.0);
         UpdatedAsset expectResult = UpdatedAsset
                 .builder()
-                .assetFrom(asset)
+                .assetFrom(assetDTO)
                 .transactionValue(10000.0)
                 .build();
 
@@ -162,13 +165,16 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0);
 
         when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(asset));
         when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
-        asset.setBalance(40000.0);
+        when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+
+        assetDTO.setBalance(40000.0);
         UpdatedAsset expectResult = UpdatedAsset
                 .builder()
-                .assetTo(asset)
+                .assetTo(assetDTO)
                 .transactionValue(10000.0)
                 .build();
 
@@ -190,17 +196,22 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset bank = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0);
         Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
+        AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0);
 
         when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(bank));
         when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(creditCard));
-        bank.setBalance(20000.0);
-        creditCard.setBalance(20000.0);
+        when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
+        when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
+
+        bankDTO.setBalance(20000.0);
+        creditCardDTO.setBalance(20000.0);
 
         UpdatedAsset expectedResult = UpdatedAsset
                 .builder()
-                .assetFrom(bank)
-                .assetTo(creditCard)
+                .assetFrom(bankDTO)
+                .assetTo(creditCardDTO)
                 .transactionValue(10000.0)
                 .build();
 

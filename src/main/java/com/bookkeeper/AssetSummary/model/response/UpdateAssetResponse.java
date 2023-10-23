@@ -1,6 +1,6 @@
 package com.bookkeeper.AssetSummary.model.response;
 
-import com.bookkeeper.AssetSummary.model.entity.Asset;
+import com.bookkeeper.AssetSummary.model.dto.AssetDTO;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -9,9 +9,9 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class UpdateAssetResponse extends BaseResponse {
 
-    Asset assetFrom;
+    AssetDTO assetFrom;
 
-    Asset assetTo;
+    AssetDTO assetTo;
 
     Double transactionValue;
 }

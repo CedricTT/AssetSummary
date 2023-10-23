@@ -1,7 +1,6 @@
 package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.*;
-import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
@@ -208,7 +207,7 @@ class AssetSummaryControllerTest {
                 .paymentTo("Friend")
                 .paymentMethod("FPS")
                 .build();
-        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new Asset()).transactionValue(100.0).build();
+        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
         when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(updatedAsset);
         mvc.perform(put("/api/v1/asset")
                         .content(objectMapper.writeValueAsString(paymentDTO))
@@ -253,7 +252,7 @@ class AssetSummaryControllerTest {
                 .paymentTo("Friend")
                 .paymentMethod("FPS")
                 .build();
-        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new Asset()).transactionValue(100.0).build();
+        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
 
         when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(updatedAsset);
 
@@ -265,7 +264,7 @@ class AssetSummaryControllerTest {
         UpdateAssetResponse expectedResponse = UpdateAssetResponse
                 .builder()
                 .transactionValue(100.0)
-                .assetFrom(new Asset())
+                .assetFrom(new AssetDTO())
                 .assetTo(null)
                 .status("SUCCESS")
                 .requestTime(LocalDateTime.now().withNano(0))
