@@ -5,7 +5,7 @@ spring:
     name: asset
   datasource:
     password: password
-    url: jdbc:postgresql://localhost:5432/assetSummary
+    url: jdbc:postgresql://host.docker.internal:5433/assetSummary
     username: postgres
   jpa:
     hibernate:
@@ -17,3 +17,8 @@ spring:
       show-sql: true
   flyway:
     baselineOnMigrate: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://172.17.0.2:8761/eureka

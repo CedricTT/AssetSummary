@@ -97,6 +97,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>asset</finalName>
 	</build>
 
 </project>
