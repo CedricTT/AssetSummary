@@ -1,12 +1,8 @@
-server:
-  port: 8082
 spring:
   application:
     name: asset
-  datasource:
-    password: password
-    url: jdbc:postgresql://host.docker.internal:5433/assetSummary
-    username: postgres
+  profiles:
+    active: dev
   jpa:
     hibernate:
       ddl-auto: none
@@ -17,8 +13,11 @@ spring:
       show-sql: true
   flyway:
     baselineOnMigrate: true
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: http://config-server:8888
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://172.17.0.2:8761/eureka
+server:
+  port: 8082
