@@ -1,23 +1,8 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: asset
   profiles:
     active: dev
-  jpa:
-    hibernate:
-      ddl-auto: none
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.PostgreSQLDialect
-          format_sql: true
-      show-sql: true
-  flyway:
-    baselineOnMigrate: true
-  config:
-    import: "optional:configserver:"
-  cloud:
-    config:
-      uri: http://config-server:8888
-
-server:
-  port: 8082
