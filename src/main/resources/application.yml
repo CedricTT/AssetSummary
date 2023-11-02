@@ -4,5 +4,3 @@ server:
 spring:
   application:
     name: asset
-  profiles:
-    active: dev

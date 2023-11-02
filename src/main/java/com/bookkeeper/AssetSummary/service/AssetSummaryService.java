@@ -42,6 +42,7 @@ public class AssetSummaryService {
             asset.setBalance(asset.getBalance() - request.getAmount());
             assetRepository.save(asset);
             updatedAsset.assetFrom(assetMapper.convertToDto(asset));
+            log.info("Updating asset: {}", asset.getName());
         });
 
         Optional<Asset> assetTo = assetRepository.findByName(request.getPaymentTo());
@@ -49,6 +50,7 @@ public class AssetSummaryService {
             asset.setBalance(asset.getBalance() + request.getAmount());
             assetRepository.save(asset);
             updatedAsset.assetTo(assetMapper.convertToDto(asset));
+            log.info("Updating asset: {}", asset.getName());
         });
 
         updatedAsset.transactionValue(request.getAmount());
