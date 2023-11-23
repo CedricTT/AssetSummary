@@ -75,7 +75,7 @@ class AssetSummaryServiceTest {
     }
 
     @Test
-    void testGetAssetSuccess() {
+    void testGetAssetByNameSuccess() {
 
         String assetName = "Bank";
         Asset bankAsset = createAsset("Bank", "bank", 100000.0);
@@ -87,7 +87,7 @@ class AssetSummaryServiceTest {
     }
 
     @Test
-    void testGetAssetNotFound() {
+    void testGetAssetByNameNotFound() {
 
         String assetName = "Test";
 
@@ -101,23 +101,6 @@ class AssetSummaryServiceTest {
 
         assertEquals("Asset Not Found in given record", thrown.getMessage());
     }
-
-//    @Test
-//    void testGetAssetRecordException() {
-//        String assetName = "Bank";
-//        Asset bankAsset = createAsset("Bank", "bank", 100000.0);
-//
-//        when(assetRepository.findByName(assetName)).thenReturn(Optional.of(bankAsset));
-//        when(recordFeignClient.readAssetRecordByName(assetName)).thenReturn(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-//
-//        Exception thrown = assertThrows(
-//            HttpException.class,
-//                () -> assetSummaryService.getAssetByName(assetName),
-//                "Error occurs when calling record service"
-//        );
-//
-//        assertEquals("Error occurs when calling record service", thrown.getMessage());
-//    }
 
     @Test
     void testUpdateAssetFrom() {
@@ -245,6 +228,36 @@ class AssetSummaryServiceTest {
     }
 
     @Test
+    void testGetAsset() {
+        String email = "test@gmail.com";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        List<Asset> assetList = new ArrayList<>();
+        assetList.add(createAsset("Bank","bank", 10000.0, email, uid));
+        assetList.add(createAsset("Credit Card","credit card", -500.0, email, uid));
+        assetList.add(createAsset("Debit Card","debit card", 2000.0, email, uid));
+
+        List<AssetDTO> assetDTOList = new ArrayList<>();
+        assetDTOList.add(new AssetDTO("Bank","bank", 10000.0));
+        assetDTOList.add(new AssetDTO("Credit Card","credit card", -500.0));
+        assetDTOList.add(new AssetDTO("Debit Card","debit card", 2000.0));
+
+        Mockito.when(assetRepository.findByEmailAndUID(email, uid)).thenReturn(Optional.of(assetList));
+        Mockito.when(assetMapper.convertToDtoList(assetList)).thenReturn(assetDTOList);
+
+        assertEquals(assetDTOList, assetSummaryService.getAsset(uid, email));
+    }
+
+    @Test
+    void testGetAssetEmpty() {
+        String email = "test@gmail.com";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+
+        Mockito.when(assetRepository.findByEmailAndUID(email, uid)).thenReturn(Optional.empty());
+
+        assertEquals(new ArrayList<AssetDTO>(), assetSummaryService.getAsset(uid, email));
+    }
+
+    @Test
     void testGetAssetSummary() {
         String assetName = "Bank";
         Asset bankAsset = createAsset("Bank", "bank", 100000.0);
@@ -316,6 +329,18 @@ class AssetSummaryServiceTest {
 
     private Asset createAsset(String name, String type, Double balance) {
         Asset asset = new Asset();
+        asset.setName(name);
+        asset.setType(type);
+        asset.setBalance(balance);
+        asset.setCreated_Date(LocalDateTime.now());
+        asset.setUpdated_Date(LocalDateTime.now());
+        return asset;
+    }
+
+    private Asset createAsset(String name, String type, Double balance, String email, String uid) {
+        Asset asset = new Asset();
+        asset.setEmail(email);
+        asset.setUID(uid);
         asset.setName(name);
         asset.setType(type);
         asset.setBalance(balance);

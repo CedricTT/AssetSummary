@@ -1,10 +1,7 @@
 package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.*;
-import com.bookkeeper.AssetSummary.model.response.AssetResponse;
-import com.bookkeeper.AssetSummary.model.response.AssetSummaryResponse;
-import com.bookkeeper.AssetSummary.model.response.BaseResponse;
-import com.bookkeeper.AssetSummary.model.response.UpdateAssetResponse;
+import com.bookkeeper.AssetSummary.model.response.*;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -57,17 +56,31 @@ public class AssetSummaryController {
     }
 
     @GetMapping
-    public ResponseEntity<AssetResponse> getAssetByName(@RequestParam String assetName) {
+    public ResponseEntity<SingleAssetResponse> getAssetByName(@RequestParam String assetName) {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         log.info("Getting asset: {}", assetName);
         AssetDTO assetDTO = assetSummaryService.getAssetByName(assetName);
-        AssetResponse assetResponse = AssetResponse.builder()
+        SingleAssetResponse assetResponse = SingleAssetResponse.builder()
                 .asset(assetDTO)
                 .status("SUCCESS")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
         return new ResponseEntity<>(assetResponse, httpHeaders, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<AssetResponse> getAsset(@RequestHeader Map<String, String> headers) {
+        String userUID = headers.get("user-uid");
+        String userEmail = headers.get("user-email");
+        log.info("Getting asset for user: {}", userEmail);
+        List<AssetDTO> assetDTOList = assetSummaryService.getAsset(userUID, userEmail);
+        AssetResponse assetResponse = AssetResponse.builder()
+                .asset(assetDTOList)
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+        return new ResponseEntity<>(assetResponse, HttpStatus.OK);
     }
 
     @GetMapping(value = "/summary")

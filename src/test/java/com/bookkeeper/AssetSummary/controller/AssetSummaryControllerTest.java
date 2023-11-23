@@ -154,7 +154,7 @@ class AssetSummaryControllerTest {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String assetName = "Bank";
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
-        AssetResponse assetResponse = AssetResponse
+        SingleAssetResponse assetResponse = SingleAssetResponse
                 .builder()
                 .asset(assetDTO)
                 .status("SUCCESS")

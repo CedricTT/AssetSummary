@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -100,5 +101,14 @@ public class AssetSummaryService {
                 .assetDTO(assetMapper.convertToDto(asset))
                 .speeding(spending)
                 .build();
+    }
+
+    public List<AssetDTO> getAsset(String userUID, String userEmail) {
+
+        Optional<List<Asset>> assetList = assetRepository.findByEmailAndUID(userEmail, userUID);
+
+        return assetList.isPresent()
+                ? assetMapper.convertToDtoList(assetList.get())
+                : new ArrayList<>();
     }
 }

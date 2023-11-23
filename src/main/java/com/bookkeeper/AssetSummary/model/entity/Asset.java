@@ -19,6 +19,10 @@ public class Asset {
     @SequenceGenerator(name = "asset_generator", sequenceName = "asset_seq", allocationSize = 1)
     private Long id;
 
+    private String UID;
+
+    private String email;
+
     private String name;
 
     private String type;
