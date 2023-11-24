@@ -65,10 +65,24 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetValidation() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO(null, "bank", 10000.0);
+
+        AssetDTO assetDTO_Missing = new AssetDTO(null, "bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
         mvc.perform(post("/api/v1/asset")
-                .content(mapper.writeValueAsString(assetDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .header("user-uid", uid)
+                        .header("user-email", email)
+                        .content(mapper.writeValueAsString(assetDTO_Missing))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(post("/api/v1/asset")
+                        .content(mapper.writeValueAsString(assetDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -77,7 +91,12 @@ class AssetSummaryControllerTest {
     void testCreateAssetBusinessLogic() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
         mvc.perform(post("/api/v1/asset")
+                .header("user-uid", uid)
+                .header("user-email", email)
                 .content(mapper.writeValueAsString(assetDTO))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -88,17 +107,25 @@ class AssetSummaryControllerTest {
     }
 
     @Test
-    void testCreateAssetOutput() throws Exception {
+    void testCreateAssetResponse() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
         when(assetSummaryService.createAsset(any())).thenReturn(assetDTO);
+
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/asset")
-                .content(objectMapper.writeValueAsString(assetDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .header("user-uid", uid)
+                        .header("user-email", email)
+                        .content(objectMapper.writeValueAsString(assetDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
+
         BaseResponse expectedResponse = BaseResponse.builder()
                 .status("SUCCESS").requestTime(LocalDateTime.now().withNano(0))
                 .build();
@@ -110,21 +137,30 @@ class AssetSummaryControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
-        when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset Already exist in given period of time"));
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
+        when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset already exist"));
+
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/asset")
+                        .header("user-uid", uid)
+                        .header("user-email", email)
                         .content(objectMapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
+
         ErrorResponse expectedResponse = ErrorResponse
                 .builder()
                 .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .code("0030")
-                .message("Asset Already exist in given period of time")
+                .message("Asset already exist")
                 .status("FAILED")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
+
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
         String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);

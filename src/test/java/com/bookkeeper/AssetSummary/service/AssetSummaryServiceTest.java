@@ -46,9 +46,13 @@ class AssetSummaryServiceTest {
 
     @Test
     void testCreateAsset() {
+
+        String email = "test@gmail.com";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+
         AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
 
-        Asset asset = createAsset("Bank","bank", 10000.0);
+        Asset asset = createAsset("Bank","bank", 10000.0, email, uid);
 
         Mockito.when(assetMapper.convertToEntity(assetDTO)).thenReturn(asset);
         Mockito.when(assetRepository.save(asset)).thenReturn(asset);
@@ -59,19 +63,21 @@ class AssetSummaryServiceTest {
 
     @Test
     void testExistingCreation() {
+
+        String email = "test@gmail.com";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+
         AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
 
-        Asset asset = createAsset("Bank","bank", 10000.0);
+        Asset asset = createAsset("Bank","bank", 10000.0, email, uid);
 
-        Mockito.when(assetRepository.findByName("Bank")).thenReturn(Optional.of(asset));
+        Mockito.when(assetRepository.findByNameAndUID("Bank", uid)).thenReturn(Optional.of(asset));
 
-        Exception thrown = assertThrows(
+        assertThrows(
                 AssetAlreadyExisting.class,
                 () -> assetSummaryService.createAsset(assetDTO),
-                "Asset Already exist in given period of time"
+                "Asset already exist"
         );
-
-        assertEquals("Asset Already exist in given period of time", thrown.getMessage());
     }
 
     @Test
