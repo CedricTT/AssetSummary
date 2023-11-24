@@ -254,7 +254,11 @@ class AssetSummaryServiceTest {
 
         Mockito.when(assetRepository.findByEmailAndUID(email, uid)).thenReturn(Optional.empty());
 
-        assertEquals(new ArrayList<AssetDTO>(), assetSummaryService.getAsset(uid, email));
+        assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.getAsset(uid, email),
+                "No record found"
+        );
     }
 
     @Test

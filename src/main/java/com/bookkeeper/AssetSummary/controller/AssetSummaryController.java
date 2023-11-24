@@ -1,6 +1,7 @@
 package com.bookkeeper.AssetSummary.controller;
 
 import com.bookkeeper.AssetSummary.model.dto.*;
+import com.bookkeeper.AssetSummary.model.exception.ForbiddenException;
 import com.bookkeeper.AssetSummary.model.response.*;
 import com.bookkeeper.AssetSummary.service.AssetSummaryService;
 import jakarta.validation.Valid;
@@ -55,7 +56,7 @@ public class AssetSummaryController {
         return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping("/single")
     public ResponseEntity<SingleAssetResponse> getAssetByName(@RequestParam String assetName) {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -70,9 +71,11 @@ public class AssetSummaryController {
     }
 
     @GetMapping
-    public ResponseEntity<AssetResponse> getAsset(@RequestHeader Map<String, String> headers) {
-        String userUID = headers.get("user-uid");
-        String userEmail = headers.get("user-email");
+    public ResponseEntity<AssetResponse> getAsset(@RequestHeader("user-uid") String userUID, @RequestHeader("user-email") String userEmail) {
+
+        if(userUID.isBlank() || userEmail.isBlank())
+            throw new ForbiddenException("999", "Missing user info");
+
         log.info("Getting asset for user: {}", userEmail);
         List<AssetDTO> assetDTOList = assetSummaryService.getAsset(userUID, userEmail);
         AssetResponse assetResponse = AssetResponse.builder()

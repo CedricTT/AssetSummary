@@ -105,10 +105,9 @@ public class AssetSummaryService {
 
     public List<AssetDTO> getAsset(String userUID, String userEmail) {
 
-        Optional<List<Asset>> assetList = assetRepository.findByEmailAndUID(userEmail, userUID);
+        List<Asset> assetList = assetRepository.findByEmailAndUID(userEmail, userUID).orElseThrow(
+                () -> new AssetNotFound("0050", "No record found"));
 
-        return assetList.isPresent()
-                ? assetMapper.convertToDtoList(assetList.get())
-                : new ArrayList<>();
+        return assetMapper.convertToDtoList(assetList);
     }
 }

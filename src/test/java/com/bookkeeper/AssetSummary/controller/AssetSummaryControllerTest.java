@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -129,10 +131,10 @@ class AssetSummaryControllerTest {
     }
 
     @Test
-    void testGetAssetByAssetName() throws Exception {
+    void testGetSingleAssetByAssetName() throws Exception {
         String assetName = "Bank";
         mvc.perform(
-                get("/api/v1/asset")
+                get("/api/v1/asset/single")
                 .param(("assetName"), assetName))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -140,15 +142,15 @@ class AssetSummaryControllerTest {
     }
 
     @Test
-    void testGetAssetByAssetNameBadRequest() throws Exception {
+    void testGetSingleAssetByAssetNameBadRequest() throws Exception {
         mvc.perform(
-                get("/api/v1/asset"))
+                get("/api/v1/asset/single"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void testGetAssetResponse() throws Exception {
+    void testGetSingleAssetResponse() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -162,21 +164,21 @@ class AssetSummaryControllerTest {
                 .build();
         when(assetSummaryService.getAssetByName(assetName)).thenReturn(assetDTO);
         MvcResult mvcResult = mvc.perform(
-                get("/api/v1/asset")
+                get("/api/v1/asset/single")
                 .param(("assetName"), assetName))
                 .andReturn();
         assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(assetResponse));
     }
 
     @Test
-    void testGetAssetException() throws Exception {
+    void testGetSingleAssetException() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String assetName = "Bank";
         when(assetSummaryService.getAssetByName(assetName)).thenThrow(new AssetNotFound("0031", "Asset Not Found in given record"));
         MvcResult mvcResult = mvc.perform(
-                        get("/api/v1/asset")
+                        get("/api/v1/asset/single")
                                 .param(("assetName"), assetName)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andReturn();
@@ -188,6 +190,108 @@ class AssetSummaryControllerTest {
                 .code("0031")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
+        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
+        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
+    }
+
+    @Test
+    void testGetAsset() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
+        List<AssetDTO> assetDTOList = new ArrayList<>();
+        assetDTOList.add(new AssetDTO("Bank","bank", 10000.0));
+        assetDTOList.add(new AssetDTO("Credit Card","credit card", -500.0));
+        assetDTOList.add(new AssetDTO("Debit Card","debit card", 2000.0));
+
+        AssetResponse assetResponse = AssetResponse
+                .builder()
+                .asset(assetDTOList)
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        when(assetSummaryService.getAsset(uid, email)).thenReturn(assetDTOList);
+
+        MvcResult mvcResult = mvc.perform(
+                        get("/api/v1/asset")
+                                .header("user-uid", uid)
+                                .header("user-email", email))
+                        .andReturn();
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(assetResponse));
+    }
+
+    @Test
+    void testGetAssetException_MissingHeaders() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
+        mvc.perform(
+                get("/api/v1/asset")
+                        .header("user-email", email))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(
+                get("/api/v1/asset")
+                        .header("user-uid", uid))
+                .andExpect(status().isBadRequest());
+
+        MvcResult mvcResult = mvc.perform(
+                        get("/api/v1/asset")
+                                .header("user-uid", "")
+                                .header("user-email", email))
+                .andReturn();
+
+        ErrorResponse expectedResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.FORBIDDEN.value())
+                .message("Missing user info")
+                .status("FAILED")
+                .code("999")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
+
+        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
+    }
+
+    @Test
+    void testGetAssetException_AssetNotFound() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
+        when(assetSummaryService.getAsset(uid, email)).thenThrow(new AssetNotFound("0050", "No record found"));
+
+        MvcResult mvcResult = mvc.perform(
+                        get("/api/v1/asset")
+                                .header("user-email", email)
+                                .header("user-uid", uid))
+                .andReturn();
+
+        ErrorResponse expectedResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("No record found")
+                .status("FAILED")
+                .code("0050")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
         String actualResponseBody = mvcResult.getResponse().getContentAsString();
         String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
