@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,15 +58,17 @@ public class AssetSummaryService {
         return updatedAsset.build();
     }
 
-    public AssetDTO createAsset(AssetDTO request) {
+    public AssetDTO createAsset(String uid, String email, AssetDTO request) {
 
-        assetRepository.findByName(request.getName()).ifPresent(s -> {
-            throw new AssetAlreadyExisting("0030","Asset Already exist in given period of time");
+        assetRepository.findByNameAndUID(request.getName(), uid).ifPresent(s -> {
+            throw new AssetAlreadyExisting("0030","Asset Already exist");
         });
 
-        Asset asset = assetRepository.save(assetMapper.convertToEntity(request));
+        Asset asset = assetMapper.convertToEntity(request);
+        asset.setUID(uid);
+        asset.setEmail(email);
 
-        return assetMapper.convertToDto(asset);
+        return assetMapper.convertToDto(assetRepository.save(asset));
     }
 
     public AssetDTO getAssetByName(String assetName) {

@@ -12,5 +12,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     Optional<Asset> findByName(String name);
 
+    Optional<Asset> findByNameAndUID(String name, String uid);
+
     Optional<List<Asset>> findByEmailAndUID(String email, String uid);
 }

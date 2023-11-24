@@ -52,13 +52,15 @@ class AssetSummaryServiceTest {
 
         AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
 
-        Asset asset = createAsset("Bank","bank", 10000.0, email, uid);
+        Asset mappedAsset = createAsset("Bank","bank", 10000.0);
 
-        Mockito.when(assetMapper.convertToEntity(assetDTO)).thenReturn(asset);
-        Mockito.when(assetRepository.save(asset)).thenReturn(asset);
-        Mockito.when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
+        Mockito.when(assetMapper.convertToEntity(assetDTO)).thenReturn(mappedAsset);
+        mappedAsset.setUID(uid);
+        mappedAsset.setEmail(email);
+        Mockito.when(assetRepository.save(mappedAsset)).thenReturn(mappedAsset);
+        Mockito.when(assetMapper.convertToDto(mappedAsset)).thenReturn(assetDTO);
 
-        assertEquals(assetDTO, assetSummaryService.createAsset(assetDTO));
+        assertEquals(assetDTO, assetSummaryService.createAsset(uid, email, assetDTO));
     }
 
     @Test
@@ -75,7 +77,7 @@ class AssetSummaryServiceTest {
 
         assertThrows(
                 AssetAlreadyExisting.class,
-                () -> assetSummaryService.createAsset(assetDTO),
+                () -> assetSummaryService.createAsset(uid, email, assetDTO),
                 "Asset already exist"
         );
     }

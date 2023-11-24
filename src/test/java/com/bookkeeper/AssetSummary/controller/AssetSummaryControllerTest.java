@@ -54,7 +54,11 @@ class AssetSummaryControllerTest {
     void testCreateAssetSuccess() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
         mvc.perform(post("/api/v1/asset")
+                        .header("user-uid", uid)
+                        .header("user-email", email)
                         .content(mapper.writeValueAsString(assetDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -101,7 +105,7 @@ class AssetSummaryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON));
 
         ArgumentCaptor<AssetDTO> assetDTOArgumentCaptor = ArgumentCaptor.forClass(AssetDTO.class);
-        verify(assetSummaryService).createAsset(assetDTOArgumentCaptor.capture());
+        verify(assetSummaryService).createAsset(any(), any(), assetDTOArgumentCaptor.capture());
         assertThat(assetDTOArgumentCaptor.getValue().getName()).isEqualTo("Bank");
         assertThat(assetDTOArgumentCaptor.getValue().getType()).isEqualTo("bank");
     }
@@ -116,7 +120,7 @@ class AssetSummaryControllerTest {
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
-        when(assetSummaryService.createAsset(any())).thenReturn(assetDTO);
+        when(assetSummaryService.createAsset(any(), any(), any())).thenReturn(assetDTO);
 
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/asset")
@@ -142,7 +146,27 @@ class AssetSummaryControllerTest {
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
-        when(assetSummaryService.createAsset(assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset already exist"));
+        MvcResult forbiddenResult = mvc.perform(post("/api/v1/asset")
+                        .header("user-uid", "")
+                        .header("user-email", email)
+                        .content(objectMapper.writeValueAsString(assetDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        ErrorResponse forbiddenResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.FORBIDDEN.value())
+                .code("999")
+                .message("Missing user info")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        String forbiddenResultBody = forbiddenResult.getResponse().getContentAsString();
+        String forbiddenResponseBody = objectMapper.writeValueAsString(forbiddenResponse);
+        assertThat(forbiddenResultBody).isEqualToIgnoringWhitespace(forbiddenResponseBody);
+
+        when(assetSummaryService.createAsset(uid, email, assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset already exist"));
 
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/asset")
@@ -178,7 +202,7 @@ class AssetSummaryControllerTest {
     }
 
     @Test
-    void testGetSingleAssetByAssetNameBadRequest() throws Exception {
+    void testGetSingleAssetByAssetNameValidation() throws Exception {
         mvc.perform(
                 get("/api/v1/asset/single"))
                 .andDo(print())

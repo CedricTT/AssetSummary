@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -44,15 +43,25 @@ public class AssetSummaryController {
     }
 
     @PostMapping
-    public ResponseEntity<BaseResponse> createAsset(@Valid @RequestBody AssetDTO request) {
+    public ResponseEntity<BaseResponse> createAsset(@Valid @RequestBody AssetDTO request,
+                                                    @RequestHeader("user-uid") String userUID,
+                                                    @RequestHeader("user-email") String userEmail) {
+
+        if(userUID.isBlank() || userEmail.isBlank())
+            throw new ForbiddenException("999", "Missing user info");
+
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
         log.info("Creating new asset: {}", request.toString());
-        assetSummaryService.createAsset(request);
+
+        assetSummaryService.createAsset(userUID, userEmail, request);
+
         BaseResponse response = BaseResponse.builder()
                 .status("SUCCESS")
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
+
         return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
     }
 
