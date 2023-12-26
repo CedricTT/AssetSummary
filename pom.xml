@@ -99,6 +99,12 @@
 				<profile.active>docker</profile.active>
 			</properties>
 		</profile>
+		<profile>
+			<id>uat</id>
+			<properties>
+				<profile.active>uat</profile.active>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>
@@ -107,16 +113,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>3.1.2</version>
-			</plugin>
-			<plugin>
-				<groupId>org.flywaydb</groupId>
-				<artifactId>flyway-maven-plugin</artifactId>
-				<version>9.17.0</version>
-				<configuration>
-					<url>jdbc:postgresql://localhost:5432/assetSummary</url>
-					<user>postgres</user>
-					<password>password</password>
-				</configuration>
 			</plugin>
 		</plugins>
 		<finalName>asset</finalName>
