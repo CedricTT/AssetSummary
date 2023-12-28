@@ -18,5 +18,5 @@ spring:
     import: "optional:configserver:"
   cloud:
     config:
-      uri: http://config-server:8888
+      uri: https://config-server-dknqf7ztka-df.a.run.app
 
