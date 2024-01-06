@@ -114,6 +114,7 @@ class AssetSummaryServiceTest {
     void testUpdateAssetFrom() {
         String assetFrom = "Bank";
         String assetTo = "Shop";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO
                 .builder()
                 .description("test")
@@ -127,8 +128,8 @@ class AssetSummaryServiceTest {
         Asset asset = createAsset("Bank", "bank account", 30000.0);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0);
 
-        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(asset));
-        when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(asset));
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
 
         assetDTO.setBalance(20000.0);
@@ -138,13 +139,14 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO));
+        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
     }
 
     @Test
     void testUpdateAssetTo() {
         String assetTo = "Bank";
         String assetFrom = "Trader";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO
                 .builder()
                 .description("test")
@@ -158,8 +160,8 @@ class AssetSummaryServiceTest {
         Asset asset = createAsset("Bank", "bank account", 30000.0);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0);
 
-        when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(asset));
-        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(asset));
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
 
         assetDTO.setBalance(40000.0);
@@ -169,13 +171,14 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO));
+        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
     }
 
     @Test
     void testUpdateAssetBoth() {
         String assetTo = "Credit Card";
         String assetFrom = "Bank";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO
                 .builder()
                 .description("test")
@@ -191,8 +194,8 @@ class AssetSummaryServiceTest {
         Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
         AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0);
 
-        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.of(bank));
-        when(assetRepository.findByName(assetTo)).thenReturn(Optional.of(creditCard));
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
         when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
         when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
 
@@ -206,13 +209,14 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectedResult, assetSummaryService.updateAsset(paymentDTO));
+        assertEquals(expectedResult, assetSummaryService.updateAsset(paymentDTO, uid));
     }
 
     @Test
     void testUpdateAsset_AssetNotFound() {
         String assetFrom = "Bank";
         String assetTo = "Shop";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO
                 .builder()
                 .description("test")
@@ -224,15 +228,15 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
 
-        when(assetRepository.findByName(assetFrom)).thenReturn(Optional.empty());
-        when(assetRepository.findByName(assetTo)).thenReturn(Optional.empty());
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
 
         UpdatedAsset expectResult = UpdatedAsset
                 .builder()
                 .transactionValue(100.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO));
+        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
     }
 
     @Test

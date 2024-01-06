@@ -33,11 +33,11 @@ public class AssetSummaryService {
     @Autowired
     private PaymentRecordFeignClient paymentRecordFeignClient;
 
-    public UpdatedAsset updateAsset(PaymentDTO request) {
+    public UpdatedAsset updateAsset(PaymentDTO request, String UID) {
 
         UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
 
-        Optional<Asset> assetFrom = assetRepository.findByName(request.getPaymentFrom());
+        Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresent(asset -> {
             asset.setBalance(asset.getBalance() - request.getAmount());
             assetRepository.save(asset);
@@ -45,7 +45,7 @@ public class AssetSummaryService {
             log.info("Updating asset: {}", asset.getName());
         });
 
-        Optional<Asset> assetTo = assetRepository.findByName(request.getPaymentTo());
+        Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
         assetTo.ifPresent(asset -> {
             asset.setBalance(asset.getBalance() + request.getAmount());
             assetRepository.save(asset);

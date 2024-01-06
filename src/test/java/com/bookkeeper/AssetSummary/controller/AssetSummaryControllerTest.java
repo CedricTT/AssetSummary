@@ -362,6 +362,7 @@ class AssetSummaryControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO.builder()
                 .amount(100)
                 .date(LocalDate.now())
@@ -372,8 +373,9 @@ class AssetSummaryControllerTest {
                 .paymentMethod("FPS")
                 .build();
         UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
-        when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(updatedAsset);
+        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenReturn(updatedAsset);
         mvc.perform(put("/api/v1/asset")
+                        .header("user-uid", uid)
                         .content(objectMapper.writeValueAsString(paymentDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -406,7 +408,7 @@ class AssetSummaryControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO.builder()
                 .amount(100)
                 .date(LocalDate.now())
@@ -418,9 +420,10 @@ class AssetSummaryControllerTest {
                 .build();
         UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
 
-        when(assetSummaryService.updateAsset(paymentDTO)).thenReturn(updatedAsset);
+        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenReturn(updatedAsset);
 
         MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
+                        .header("user-uid", uid)
                         .content(objectMapper.writeValueAsString(paymentDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -442,6 +445,7 @@ class AssetSummaryControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO.builder()
                 .amount(100)
                 .date(LocalDate.now())
@@ -452,10 +456,11 @@ class AssetSummaryControllerTest {
                 .paymentMethod("FPS")
                 .build();
 
-        when(assetSummaryService.updateAsset(any())).thenThrow(new AssetNotFound("0040", "Asset Not Found in given record"));
+        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenThrow(new AssetNotFound("0040", "Asset Not Found in given record"));
 
         MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
                         .content(objectMapper.writeValueAsString(paymentDTO))
+                        .header("user-uid", uid)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andReturn();

@@ -25,12 +25,12 @@ public class AssetSummaryController {
     private final AssetSummaryService assetSummaryService;
 
     @PutMapping
-    public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody PaymentDTO request) {
+    public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody PaymentDTO request, @Valid @RequestHeader("user-uid") String UID) {
 
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        UpdatedAsset updatedAsset = assetSummaryService.updateAsset(request);
+        UpdatedAsset updatedAsset = assetSummaryService.updateAsset(request, UID);
         UpdateAssetResponse updateAssetResponse = UpdateAssetResponse.builder()
                 .assetFrom(updatedAsset.getAssetFrom())
                 .assetTo(updatedAsset.getAssetTo())
