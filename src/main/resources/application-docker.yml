@@ -18,5 +18,5 @@ spring:
     import: "optional:configserver:"
   cloud:
     config:
-      uri: http://config-server:8888
+      uri: http://host.docker.internal:8888
 
