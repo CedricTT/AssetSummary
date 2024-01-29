@@ -50,7 +50,7 @@ class AssetSummaryServiceTest {
         String email = "test@gmail.com";
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
 
-        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0, "Purple");
 
         Asset mappedAsset = createAsset("Bank","bank", 10000.0);
 
@@ -69,7 +69,7 @@ class AssetSummaryServiceTest {
         String email = "test@gmail.com";
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
 
-        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0, "Purple");
 
         Asset asset = createAsset("Bank","bank", 10000.0, email, uid);
 
@@ -87,7 +87,7 @@ class AssetSummaryServiceTest {
 
         String assetName = "Bank";
         Asset bankAsset = createAsset("Bank", "bank", 100000.0);
-        AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0);
+        AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0, "Purple");
         when(assetRepository.findByName("Bank")).thenReturn(Optional.of(bankAsset));
         when(assetMapper.convertToDto(bankAsset)).thenReturn(bankAssetDTO);
 
@@ -126,7 +126,7 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
 
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(asset));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
@@ -158,7 +158,7 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
 
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(asset));
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
@@ -190,9 +190,9 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetTo)
                 .build();
         Asset bank = createAsset("Bank", "bank account", 30000.0);
-        AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0);
+        AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
         Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
-        AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0);
+        AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0, "Purple");
 
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
@@ -249,9 +249,9 @@ class AssetSummaryServiceTest {
         assetList.add(createAsset("Debit Card","debit card", 2000.0, email, uid));
 
         List<AssetDTO> assetDTOList = new ArrayList<>();
-        assetDTOList.add(new AssetDTO("Bank","bank", 10000.0));
-        assetDTOList.add(new AssetDTO("Credit Card","credit card", -500.0));
-        assetDTOList.add(new AssetDTO("Debit Card","debit card", 2000.0));
+        assetDTOList.add(new AssetDTO("Bank","bank", 10000.0, "Purple"));
+        assetDTOList.add(new AssetDTO("Credit Card","credit card", -500.0, "Purple"));
+        assetDTOList.add(new AssetDTO("Debit Card","debit card", 2000.0, "Purple"));
 
         Mockito.when(assetRepository.findByEmailAndUID(email, uid)).thenReturn(Optional.of(assetList));
         Mockito.when(assetMapper.convertToDtoList(assetList)).thenReturn(assetDTOList);
@@ -277,7 +277,7 @@ class AssetSummaryServiceTest {
     void testGetAssetSummary() {
         String assetName = "Bank";
         Asset bankAsset = createAsset("Bank", "bank", 100000.0);
-        AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0);
+        AssetDTO bankAssetDTO = new AssetDTO("Bank", "bank", 100000.0, "Purple");
         List<PaymentDTO> paymentDTOList = new ArrayList<>();
         paymentDTOList.add(PaymentDTO
                 .builder()
@@ -350,6 +350,7 @@ class AssetSummaryServiceTest {
         asset.setBalance(balance);
         asset.setCreated_Date(LocalDateTime.now());
         asset.setUpdated_Date(LocalDateTime.now());
+        asset.setColor("Purple");
         return asset;
     }
 

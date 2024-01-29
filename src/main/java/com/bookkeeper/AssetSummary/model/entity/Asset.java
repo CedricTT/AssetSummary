@@ -29,6 +29,8 @@ public class Asset {
 
     private Double balance;
 
+    private String color;
+
     private LocalDateTime created_Date;
 
     private LocalDateTime updated_Date;

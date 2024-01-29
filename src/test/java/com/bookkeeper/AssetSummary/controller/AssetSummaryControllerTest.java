@@ -53,7 +53,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetSuccess() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
         mvc.perform(post("/api/v1/asset")
@@ -70,8 +70,8 @@ class AssetSummaryControllerTest {
     void testCreateAssetValidation() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
 
-        AssetDTO assetDTO_Missing = new AssetDTO(null, "bank", 10000.0);
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        AssetDTO assetDTO_Missing = new AssetDTO(null, "bank", 10000.0, "Purple");
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
 
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
@@ -94,7 +94,7 @@ class AssetSummaryControllerTest {
     @Test
     void testCreateAssetBusinessLogic() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
@@ -116,7 +116,7 @@ class AssetSummaryControllerTest {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
@@ -142,7 +142,7 @@ class AssetSummaryControllerTest {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
@@ -215,7 +215,7 @@ class AssetSummaryControllerTest {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String assetName = "Bank";
-        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0);
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
         SingleAssetResponse assetResponse = SingleAssetResponse
                 .builder()
                 .asset(assetDTO)
@@ -265,9 +265,9 @@ class AssetSummaryControllerTest {
         String email = "test@gmail.com";
 
         List<AssetDTO> assetDTOList = new ArrayList<>();
-        assetDTOList.add(new AssetDTO("Bank","bank", 10000.0));
-        assetDTOList.add(new AssetDTO("Credit Card","credit card", -500.0));
-        assetDTOList.add(new AssetDTO("Debit Card","debit card", 2000.0));
+        assetDTOList.add(new AssetDTO("Bank","bank", 10000.0, "Purple"));
+        assetDTOList.add(new AssetDTO("Credit Card","credit card", -500.0, "Purple"));
+        assetDTOList.add(new AssetDTO("Debit Card","debit card", 2000.0, "Purple"));
 
         AssetResponse assetResponse = AssetResponse
                 .builder()
@@ -493,7 +493,7 @@ class AssetSummaryControllerTest {
 
         String assetName = "Bank";
         LocalDateTime requestTime = LocalDateTime.now();
-        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0);
+        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0, "Purple");
         AssetSummary expectedValue = AssetSummary
                 .builder()
                 .assetDTO(assetDTO)
