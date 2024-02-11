@@ -4,22 +4,19 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class AssetDTO {
+public class TransactionRecord {
 
     @NotBlank
-    private String name;
-
-    @NotBlank
-    private String type;
+    String assetName;
 
     @NotNull
-    private Double balance;
+    Double amount;
 
     @NotNull
-    private String color;
+    LocalDateTime requestTime;
 }
