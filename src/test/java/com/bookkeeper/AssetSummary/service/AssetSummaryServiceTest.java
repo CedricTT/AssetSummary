@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.utils.SerializationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -127,7 +129,11 @@ class AssetSummaryServiceTest {
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
+        Message message = new Message(SerializationUtils.serialize(map));
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(asset));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
@@ -139,7 +145,7 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectResult, assetSummaryService.updateAsset(message));
     }
 
     @Test
@@ -159,7 +165,11 @@ class AssetSummaryServiceTest {
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
+        Message message = new Message(SerializationUtils.serialize(map));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(asset));
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
@@ -171,7 +181,7 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectResult, assetSummaryService.updateAsset(message));
     }
 
     @Test
@@ -193,7 +203,11 @@ class AssetSummaryServiceTest {
         AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
         Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
         AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0, "Purple");
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
+        Message message = new Message(SerializationUtils.serialize(map));
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
         when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
@@ -209,7 +223,7 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectedResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectedResult, assetSummaryService.updateAsset(message));
     }
 
     @Test
