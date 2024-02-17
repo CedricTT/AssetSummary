@@ -3,9 +3,7 @@ package com.bookkeeper.AssetSummary.service;
 import com.bookkeeper.AssetSummary.client.PaymentRecordFeignClient;
 import com.bookkeeper.AssetSummary.model.dto.*;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
-import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
-import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
-import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
+import com.bookkeeper.AssetSummary.model.exception.*;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.PaymentRecordResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -16,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,9 +32,25 @@ public class AssetSummaryService {
     @Autowired
     private PaymentRecordFeignClient paymentRecordFeignClient;
 
-    public UpdatedAsset updateAsset(PaymentDTO request, String UID) {
+    public UpdatedAsset updateAsset(HashMap<String, Object> message) {
 
         UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
+
+        String UID = (String) message.get("uid");
+        if(UID == null || UID.isEmpty())
+            throw new ForbiddenException("999", "Missing user info");
+
+        PaymentDTO request = (PaymentDTO) message.get("request_record");
+        if(request == null || request.getPaymentFrom() == null || request.getPaymentTo() == null)
+            throw new GlobalException("0041", "Invalid request");
+
+        if(message.get("reverse_record") != null) {
+            PaymentDTO reverse_record = (PaymentDTO) message.get("reverse_record");
+            if(reverse_record.getPaymentFrom() == null || reverse_record.getPaymentTo() == null)
+                throw new GlobalException("0041", "Invalid request");
+
+            reverseAsset(reverse_record, UID);
+        }
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresent(asset -> {
@@ -110,5 +125,25 @@ public class AssetSummaryService {
                 () -> new AssetNotFound("0050", "No record found"));
 
         return assetMapper.convertToDtoList(assetList);
+    }
+
+    public void reverseAsset(PaymentDTO reverseRecord, String UID) {
+        Optional<Asset> assetFrom = assetRepository.findByNameAndUID(reverseRecord.getPaymentFrom(), UID);
+        assetFrom.ifPresentOrElse(asset -> {
+            asset.setBalance(asset.getBalance() - reverseRecord.getAmount());
+            assetRepository.save(asset);
+            log.info("Reverse asset: {}", asset.getName());
+        }, () -> {
+            throw new GlobalException("0042", "Invalid reverse request");
+        });
+
+        Optional<Asset> assetTo = assetRepository.findByNameAndUID(reverseRecord.getPaymentTo(), UID);
+        assetTo.ifPresentOrElse(asset -> {
+            asset.setBalance(asset.getBalance() + reverseRecord.getAmount());
+            assetRepository.save(asset);
+            log.info("Reverse asset: {}", asset.getName());
+        }, () -> {
+            throw new GlobalException("0042", "Invalid reverse request");
+        });
     }
 }
