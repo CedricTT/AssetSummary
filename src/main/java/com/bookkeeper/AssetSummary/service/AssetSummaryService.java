@@ -7,6 +7,9 @@ import com.bookkeeper.AssetSummary.model.exception.*;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.PaymentRecordResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,12 +38,15 @@ public class AssetSummaryService {
     public UpdatedAsset updateAsset(HashMap<String, Object> message) {
 
         UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         String UID = (String) message.get("uid");
         if(UID == null || UID.isEmpty())
             throw new ForbiddenException("999", "Missing user info");
 
-        PaymentDTO request = (PaymentDTO) message.get("request_record");
+        PaymentDTO request = mapper.convertValue(message.get("request_record"), PaymentDTO.class);
         if(request == null || request.getPaymentFrom() == null || request.getPaymentTo() == null)
             throw new GlobalException("0041", "Invalid request");
 
