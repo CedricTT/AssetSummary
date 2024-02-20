@@ -19,7 +19,7 @@ public class DirectReceiver {
     @Autowired
     AssetSummaryService assetSummaryService;
 
-    @RabbitListener(queues = "PaymentRecordQueue")
+    @RabbitListener(queues = "${rabbitmqConfig.queue}")
     public void process(HashMap<String, Object> message,
                         Channel channel,
                         @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws IOException {
