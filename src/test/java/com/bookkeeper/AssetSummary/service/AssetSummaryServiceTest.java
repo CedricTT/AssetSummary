@@ -6,16 +6,14 @@ import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
 import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
+import com.bookkeeper.AssetSummary.model.exception.GlobalException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.model.response.PaymentRecordResponse;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -24,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class AssetSummaryServiceTest {
 
@@ -127,7 +126,10 @@ class AssetSummaryServiceTest {
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(asset));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
@@ -139,7 +141,7 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectResult, assetSummaryService.updateAsset(map));
     }
 
     @Test
@@ -159,7 +161,10 @@ class AssetSummaryServiceTest {
                 .build();
         Asset asset = createAsset("Bank", "bank account", 30000.0);
         AssetDTO assetDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(asset));
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
@@ -171,7 +176,7 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectResult, assetSummaryService.updateAsset(map));
     }
 
     @Test
@@ -193,7 +198,10 @@ class AssetSummaryServiceTest {
         AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
         Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
         AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0, "Purple");
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
         when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
@@ -209,7 +217,7 @@ class AssetSummaryServiceTest {
                 .transactionValue(10000.0)
                 .build();
 
-        assertEquals(expectedResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectedResult, assetSummaryService.updateAsset(map));
     }
 
     @Test
@@ -227,6 +235,10 @@ class AssetSummaryServiceTest {
                 .paymentFrom(assetFrom)
                 .paymentTo(assetTo)
                 .build();
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
 
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
@@ -236,7 +248,83 @@ class AssetSummaryServiceTest {
                 .transactionValue(100.0)
                 .build();
 
-        assertEquals(expectResult, assetSummaryService.updateAsset(paymentDTO, uid));
+        assertEquals(expectResult, assetSummaryService.updateAsset(map));
+    }
+
+    @Test
+    void testUpdateAsset_invalidRequest() {
+        String assetTo = "Shop";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Food")
+                .paymentMethod("FPS")
+                .amount(100.0)
+                .paymentFrom(null)
+                .paymentTo(assetTo)
+                .build();
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
+
+        assertThrows(GlobalException.class,
+                () -> assetSummaryService.updateAsset(map),
+                "Invalid request");
+    }
+
+    @Test
+    void testUpdateAsset_reverseRecord() {
+        String assetTo = "Credit Card";
+        String assetFrom = "Bank";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Repayment")
+                .paymentMethod("Fund Transfer")
+                .amount(10000.0)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
+                .build();
+        PaymentDTO reverse = PaymentDTO
+                .builder()
+                .description("reverse")
+                .date(LocalDate.now())
+                .category("Income")
+                .paymentFrom("Fund Transfer")
+                .amount(5000)
+                .paymentFrom(assetTo)
+                .paymentTo(assetFrom)
+                .build();
+        Asset bank = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
+        Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
+        AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0, "Purple");
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("request_record", paymentDTO);
+        map.put("reverse_record", reverse);
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
+        when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
+        when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
+
+        bankDTO.setBalance(20000.0);
+        creditCardDTO.setBalance(20000.0);
+
+        UpdatedAsset expectedResult = UpdatedAsset
+                .builder()
+                .assetFrom(bankDTO)
+                .assetTo(creditCardDTO)
+                .transactionValue(10000.0)
+                .build();
+
+        assertEquals(expectedResult, assetSummaryService.updateAsset(map));
+        verify(assetRepository, times(4)).save(isA(Asset.class));
     }
 
     @Test
