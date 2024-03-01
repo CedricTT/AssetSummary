@@ -94,17 +94,4 @@ public class AssetSummaryController {
                 .build();
         return new ResponseEntity<>(assetResponse, HttpStatus.OK);
     }
-
-    @GetMapping(value = "/summary")
-    public ResponseEntity<AssetSummaryResponse> getAssetSummary(@RequestParam String assetName) {
-        log.info("Getting asset summary for: {}", assetName);
-        AssetSummary summaryResponse = assetSummaryService.getAssetSummary(assetName);
-        return ResponseEntity.ok().body(AssetSummaryResponse
-                .builder()
-                .status("SUCCESS")
-                .requestTime(LocalDateTime.now().withNano(0))
-                .assetDTO(summaryResponse.getAssetDTO())
-                .speeding(summaryResponse.getSpeeding())
-                .build());
-    }
 }

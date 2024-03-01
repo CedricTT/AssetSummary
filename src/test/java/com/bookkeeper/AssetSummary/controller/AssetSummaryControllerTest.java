@@ -3,7 +3,6 @@ package com.bookkeeper.AssetSummary.controller;
 import com.bookkeeper.AssetSummary.model.dto.*;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
-import com.bookkeeper.AssetSummary.model.exception.ExternalSystemException;
 import com.bookkeeper.AssetSummary.model.response.*;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -476,99 +475,4 @@ class AssetSummaryControllerTest {
 //        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
 //        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
 //    }
-
-    @Test
-    void testGetAssetSummaryValidation() throws Exception {
-        mvc.perform(get("/api/v1/asset/summary"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void testGetAssetSummaryResponse() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        String assetName = "Bank";
-        LocalDateTime requestTime = LocalDateTime.now();
-        AssetDTO assetDTO = new AssetDTO("bank", "bank account", 20000.0, "Purple");
-        AssetSummary expectedValue = AssetSummary
-                .builder()
-                .assetDTO(assetDTO)
-                .speeding(70.0)
-                .build();
-
-        when(assetSummaryService.getAssetSummary(assetName)).thenReturn(expectedValue);
-
-        MvcResult mvcResult = mvc.perform(get("/api/v1/asset/summary")
-                        .param(("assetName"), assetName))
-                .andDo(print())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        AssetSummaryResponse expectedResponse = AssetSummaryResponse
-                .builder()
-                .speeding(70.0)
-                .status("SUCCESS")
-                .assetDTO(assetDTO)
-                .requestTime(requestTime.withNano(0))
-                .build();
-
-        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
-    }
-
-    @Test
-    void testGetAssetSummaryException() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String assetName = "Bank";
-
-        when(assetSummaryService.getAssetSummary(assetName)).thenThrow(new AssetNotFound("0031", "Asset Not Found in given record"));
-
-        MvcResult mvcResult_AssetNotFound = mvc.perform(
-                        get("/api/v1/asset/summary")
-                                .param(("assetName"), assetName))
-                .andReturn();
-        ErrorResponse expectedResponse_AssetNotFound = ErrorResponse
-                .builder()
-                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Asset Not Found in given record")
-                .status("FAILED")
-                .code("0031")
-                .requestTime(LocalDateTime.now().withNano(0))
-                .build();
-
-        String actualResponseBody_AssetNotFound = mvcResult_AssetNotFound.getResponse().getContentAsString();
-        String expectedResponseBody_AssetNotFound = objectMapper.writeValueAsString(expectedResponse_AssetNotFound);
-        assertThat(actualResponseBody_AssetNotFound).isEqualToIgnoringWhitespace(expectedResponseBody_AssetNotFound);
-    }
-
-    @Test
-    void testGetAssetSummaryExternalException() throws Exception{
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String assetName = "Bank";
-
-        when(assetSummaryService.getAssetSummary(assetName)).thenThrow(new ExternalSystemException("0001", "Failed on external system call"));
-
-        MvcResult mvcResult_ExternalSystemError = mvc.perform(
-                        get("/api/v1/asset/summary")
-                                .param(("assetName"), assetName))
-                .andReturn();
-        ErrorResponse expectedResponse_ExternalSystemError = ErrorResponse
-                .builder()
-                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Failed on external system call")
-                .status("FAILED")
-                .code("0001")
-                .requestTime(LocalDateTime.now().withNano(0))
-                .build();
-
-        String actualResponseBody_ExternalSystemError = mvcResult_ExternalSystemError.getResponse().getContentAsString();
-        String expectedResponseBody_ExternalSystemError = objectMapper.writeValueAsString(expectedResponse_ExternalSystemError);
-        assertThat(actualResponseBody_ExternalSystemError).isEqualToIgnoringWhitespace(expectedResponseBody_ExternalSystemError);
-    }
 }
