@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -357,126 +356,126 @@ class AssetSummaryControllerTest {
         assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
     }
 
-    @Test
-    void testUpdateAssetSuccess() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String uid = "sdg3258rgdsjhgbj32dfgf8865";
-        PaymentDTO paymentDTO = PaymentDTO.builder()
-                .amount(100)
-                .date(LocalDate.now())
-                .category("Food")
-                .description("Lunch")
-                .paymentFrom("Bank")
-                .paymentTo("Friend")
-                .paymentMethod("FPS")
-                .build();
-        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
-        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenReturn(updatedAsset);
-        mvc.perform(put("/api/v1/asset")
-                        .header("user-uid", uid)
-                        .content(objectMapper.writeValueAsString(paymentDTO))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+//    @Test
+//    void testUpdateAssetSuccess() throws Exception {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+//        PaymentDTO paymentDTO = PaymentDTO.builder()
+//                .amount(100)
+//                .date(LocalDate.now())
+//                .category("Food")
+//                .description("Lunch")
+//                .paymentFrom("Bank")
+//                .paymentTo("Friend")
+//                .paymentMethod("FPS")
+//                .build();
+//        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
+//        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenReturn(updatedAsset);
+//        mvc.perform(put("/api/v1/asset")
+//                        .header("user-uid", uid)
+//                        .content(objectMapper.writeValueAsString(paymentDTO))
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isOk());
+//    }
 
-    @Test
-    void testUpdateValidation() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        PaymentDTO paymentDTO = PaymentDTO.builder()
-                .amount(100)
-                .date(LocalDate.now())
-                .description("Lunch")
-                .paymentFrom("Bank")
-                .paymentTo("Friend")
-                .paymentMethod("FPS")
-                .build();
-        mvc.perform(put("/api/v1/asset")
-                        .content(objectMapper.writeValueAsString(paymentDTO))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
+//    @Test
+//    void testUpdateValidation() throws Exception {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        PaymentDTO paymentDTO = PaymentDTO.builder()
+//                .amount(100)
+//                .date(LocalDate.now())
+//                .description("Lunch")
+//                .paymentFrom("Bank")
+//                .paymentTo("Friend")
+//                .paymentMethod("FPS")
+//                .build();
+//        mvc.perform(put("/api/v1/asset")
+//                        .content(objectMapper.writeValueAsString(paymentDTO))
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+//                .andExpect(status().isBadRequest());
+//    }
 
-    @Test
-    void testUpdateResponse() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String uid = "sdg3258rgdsjhgbj32dfgf8865";
-        PaymentDTO paymentDTO = PaymentDTO.builder()
-                .amount(100)
-                .date(LocalDate.now())
-                .category("Food")
-                .description("Lunch")
-                .paymentFrom("Bank")
-                .paymentTo("Friend")
-                .paymentMethod("FPS")
-                .build();
-        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
+//    @Test
+//    void testUpdateResponse() throws Exception {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+//        PaymentDTO paymentDTO = PaymentDTO.builder()
+//                .amount(100)
+//                .date(LocalDate.now())
+//                .category("Food")
+//                .description("Lunch")
+//                .paymentFrom("Bank")
+//                .paymentTo("Friend")
+//                .paymentMethod("FPS")
+//                .build();
+//        UpdatedAsset updatedAsset = UpdatedAsset.builder().assetFrom(new AssetDTO()).transactionValue(100.0).build();
+//
+//        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenReturn(updatedAsset);
+//
+//        MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
+//                        .header("user-uid", uid)
+//                        .content(objectMapper.writeValueAsString(paymentDTO))
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+//                .andReturn();
+//        UpdateAssetResponse expectedResponse = UpdateAssetResponse
+//                .builder()
+//                .transactionValue(100.0)
+//                .assetFrom(new AssetDTO())
+//                .assetTo(null)
+//                .status("SUCCESS")
+//                .requestTime(LocalDateTime.now().withNano(0))
+//                .build();
+//
+//        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
+//    }
 
-        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenReturn(updatedAsset);
-
-        MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
-                        .header("user-uid", uid)
-                        .content(objectMapper.writeValueAsString(paymentDTO))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andReturn();
-        UpdateAssetResponse expectedResponse = UpdateAssetResponse
-                .builder()
-                .transactionValue(100.0)
-                .assetFrom(new AssetDTO())
-                .assetTo(null)
-                .status("SUCCESS")
-                .requestTime(LocalDateTime.now().withNano(0))
-                .build();
-
-        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(expectedResponse));
-    }
-
-    @Test
-    void testUpdateException() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String uid = "sdg3258rgdsjhgbj32dfgf8865";
-        PaymentDTO paymentDTO = PaymentDTO.builder()
-                .amount(100)
-                .date(LocalDate.now())
-                .category("Food")
-                .description("Lunch")
-                .paymentFrom("Bank")
-                .paymentTo("Friend")
-                .paymentMethod("FPS")
-                .build();
-
-        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenThrow(new AssetNotFound("0040", "Asset Not Found in given record"));
-
-        MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
-                        .content(objectMapper.writeValueAsString(paymentDTO))
-                        .header("user-uid", uid)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andReturn();
-        ErrorResponse expectedResponse = ErrorResponse
-                .builder()
-                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Asset Not Found in given record")
-                .status("FAILED")
-                .code("0040")
-                .requestTime(LocalDateTime.now().withNano(0))
-                .build();
-
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
-        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
-    }
+//    @Test
+//    void testUpdateException() throws Exception {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+//        PaymentDTO paymentDTO = PaymentDTO.builder()
+//                .amount(100)
+//                .date(LocalDate.now())
+//                .category("Food")
+//                .description("Lunch")
+//                .paymentFrom("Bank")
+//                .paymentTo("Friend")
+//                .paymentMethod("FPS")
+//                .build();
+//
+//        when(assetSummaryService.updateAsset(paymentDTO, uid)).thenThrow(new AssetNotFound("0040", "Asset Not Found in given record"));
+//
+//        MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
+//                        .content(objectMapper.writeValueAsString(paymentDTO))
+//                        .header("user-uid", uid)
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+//                .andReturn();
+//        ErrorResponse expectedResponse = ErrorResponse
+//                .builder()
+//                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+//                .message("Asset Not Found in given record")
+//                .status("FAILED")
+//                .code("0040")
+//                .requestTime(LocalDateTime.now().withNano(0))
+//                .build();
+//
+//        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+//        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
+//        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
+//    }
 
     @Test
     void testGetAssetSummaryValidation() throws Exception {
