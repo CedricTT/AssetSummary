@@ -39,12 +39,12 @@ public class AssetSummaryService {
 
         PaymentDTO request = mapper.convertValue(message.get("request_record"), PaymentDTO.class);
         if(request == null || request.getPaymentFrom() == null || request.getPaymentTo() == null)
-            throw new GlobalException("0041", "Invalid request");
+            throw new GlobalException("0203", "Invalid request");
 
         if(message.get("reverse_record") != null) {
             PaymentDTO reverse_record = (PaymentDTO) message.get("reverse_record");
             if(reverse_record.getPaymentFrom() == null || reverse_record.getPaymentTo() == null)
-                throw new GlobalException("0041", "Invalid request");
+                throw new GlobalException("0203", "Invalid request");
 
             reverseAsset(reverse_record, UID);
         }
@@ -73,7 +73,7 @@ public class AssetSummaryService {
     public AssetDTO createAsset(String uid, String email, AssetDTO request) {
 
         assetRepository.findByNameAndUID(request.getName(), uid).ifPresent(s -> {
-            throw new AssetAlreadyExisting("0030","Asset Already exist");
+            throw new AssetAlreadyExisting("0200","Asset Already exist");
         });
 
         Asset asset = assetMapper.convertToEntity(request);
@@ -86,7 +86,7 @@ public class AssetSummaryService {
     public AssetDTO getAssetByName(String assetName) {
 
         Asset asset = assetRepository.findByName(assetName).
-                orElseThrow(() -> new AssetNotFound("0040", "Asset Not Found in given record"));
+                orElseThrow(() -> new AssetNotFound("0202", "Asset Not Found in given record"));
 
         return assetMapper.convertToDto(asset);
     }
@@ -94,7 +94,7 @@ public class AssetSummaryService {
     public List<AssetDTO> getAsset(String userUID, String userEmail) {
 
         List<Asset> assetList = assetRepository.findByEmailAndUID(userEmail, userUID).orElseThrow(
-                () -> new AssetNotFound("0050", "No record found"));
+                () -> new AssetNotFound("0201", "No record found"));
 
         return assetMapper.convertToDtoList(assetList);
     }
@@ -106,7 +106,7 @@ public class AssetSummaryService {
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
         }, () -> {
-            throw new GlobalException("0042", "Invalid reverse request");
+            throw new GlobalException("0203", "Invalid reverse request");
         });
 
         Optional<Asset> assetTo = assetRepository.findByNameAndUID(reverseRecord.getPaymentTo(), UID);
@@ -115,7 +115,7 @@ public class AssetSummaryService {
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
         }, () -> {
-            throw new GlobalException("0042", "Invalid reverse request");
+            throw new GlobalException("0203", "Invalid reverse request");
         });
     }
 }
