@@ -51,7 +51,7 @@ public class AssetSummaryService {
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresent(asset -> {
-            asset.setBalance(asset.getBalance() - request.getAmount());
+            asset.setBalance(asset.getBalance() - (request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
             assetRepository.save(asset);
             updatedAsset.assetFrom(assetMapper.convertToDto(asset));
             log.info("Updating asset: {}", asset.getName());
@@ -59,13 +59,13 @@ public class AssetSummaryService {
 
         Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
         assetTo.ifPresent(asset -> {
-            asset.setBalance(asset.getBalance() + request.getAmount());
+            asset.setBalance(asset.getBalance() + (request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
             assetRepository.save(asset);
             updatedAsset.assetTo(assetMapper.convertToDto(asset));
             log.info("Updating asset: {}", asset.getName());
         });
 
-        updatedAsset.transactionValue(request.getAmount());
+        updatedAsset.transactionValue((request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
 
         return updatedAsset.build();
     }
