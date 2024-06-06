@@ -121,18 +121,16 @@ class AssetSummaryServiceTest {
         map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
         map.put("email", "test@gmail.com");
         map.put("request_record", paymentDTO);
+
+        ArgumentCaptor<Asset> argumentCaptor = ArgumentCaptor.forClass(Asset.class);
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(asset));
+        when(assetRepository.save(isA(Asset.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
 
-        assetDTO.setBalance(20000.0);
-        UpdatedAsset expectResult = UpdatedAsset
-                .builder()
-                .assetFrom(assetDTO)
-                .transactionValue(10000.0)
-                .build();
-
-        assertEquals(expectResult, assetSummaryService.updateAsset(map));
+        assetSummaryService.updateAsset(map);
+        verify(assetRepository).save(argumentCaptor.capture());
+        assertEquals(20000, argumentCaptor.getValue().getBalance());
     }
 
     @Test
@@ -156,18 +154,16 @@ class AssetSummaryServiceTest {
         map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
         map.put("email", "test@gmail.com");
         map.put("request_record", paymentDTO);
+
+        ArgumentCaptor<Asset> argumentCaptor = ArgumentCaptor.forClass(Asset.class);
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(asset));
+        when(assetRepository.save(isA(Asset.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(asset)).thenReturn(assetDTO);
 
-        assetDTO.setBalance(40000.0);
-        UpdatedAsset expectResult = UpdatedAsset
-                .builder()
-                .assetTo(assetDTO)
-                .transactionValue(10000.0)
-                .build();
-
-        assertEquals(expectResult, assetSummaryService.updateAsset(map));
+        assetSummaryService.updateAsset(map);
+        verify(assetRepository).save(argumentCaptor.capture());
+        assertEquals(40000, argumentCaptor.getValue().getBalance());
     }
 
     @Test
