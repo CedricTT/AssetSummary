@@ -46,7 +46,7 @@ public class AssetSummaryService {
             if(reverse_record.getPaymentFrom() == null || reverse_record.getPaymentTo() == null)
                 throw new GlobalException("0203", "Invalid request");
 
-            reverseAsset(reverse_record, UID);
+            return reverseAsset(reverse_record, request, UID);
         }
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
@@ -99,21 +99,58 @@ public class AssetSummaryService {
         return assetMapper.convertToDtoList(assetList);
     }
 
-    public void reverseAsset(PaymentDTO reverseRecord, String UID) {
-        Optional<Asset> assetFrom = assetRepository.findByNameAndUID(reverseRecord.getPaymentFrom(), UID);
+    private UpdatedAsset reverseAsset(PaymentDTO reverseRecord, PaymentDTO request, String UID) {
+
+        if(!reverseRecord.getPaymentFrom().equals(request.getPaymentTo()))
+            throw new GlobalException("0203", "Invalid reverse request");
+
+        UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
+        Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresentOrElse(asset -> {
-            asset.setBalance(asset.getBalance() - reverseRecord.getAmount());
+            asset.setBalance(asset.getBalance() + reverseRecord.getAmount() - request.getAmount());
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
+            updatedAsset.assetFrom(assetMapper.convertToDto(asset));
         }, () -> {
             throw new GlobalException("0203", "Invalid reverse request");
         });
 
-        Optional<Asset> assetTo = assetRepository.findByNameAndUID(reverseRecord.getPaymentTo(), UID);
+        Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
         assetTo.ifPresentOrElse(asset -> {
-            asset.setBalance(asset.getBalance() + reverseRecord.getAmount());
+            asset.setBalance(asset.getBalance() - reverseRecord.getAmount() + request.getAmount());
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
+            updatedAsset.assetTo(assetMapper.convertToDto(asset));
+        }, () -> {
+            throw new GlobalException("0203", "Invalid reverse request");
+        });
+
+        return updatedAsset.transactionValue(request.getAmount()).build();
+    }
+
+    public void cancelTransaction(HashMap<String, Object> message) {
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        PaymentDTO request = (PaymentDTO) message.get("cancel");
+        String UID = (String) message.get("uid");
+
+        Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
+        assetFrom.ifPresentOrElse(asset -> {
+            asset.setBalance(asset.getBalance() - request.getAmount());
+            assetRepository.save(asset);
+            log.info("Cancel transaction for asset: {}", asset.getName());
+        }, () -> {
+            throw new GlobalException("0203", "Invalid reverse request");
+        });
+
+        Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
+        assetTo.ifPresentOrElse(asset -> {
+            asset.setBalance(asset.getBalance() + request.getAmount());
+            assetRepository.save(asset);
+            log.info("Cancel transaction for asset: {}", asset.getName());
         }, () -> {
             throw new GlobalException("0203", "Invalid reverse request");
         });

@@ -296,21 +296,16 @@ class AssetSummaryServiceTest {
         map.put("reverse_record", reverse);
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
+        when(assetRepository.save(isA(Asset.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
         when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
         when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
 
-        bankDTO.setBalance(20000.0);
-        creditCardDTO.setBalance(20000.0);
-
-        UpdatedAsset expectedResult = UpdatedAsset
-                .builder()
-                .assetFrom(bankDTO)
-                .assetTo(creditCardDTO)
-                .transactionValue(10000.0)
-                .build();
-
-        assertEquals(expectedResult, assetSummaryService.updateAsset(map));
-        verify(assetRepository, times(4)).save(isA(Asset.class));
+        assetSummaryService.updateAsset(map);
+        ArgumentCaptor<Asset> argumentCaptor = ArgumentCaptor.forClass(Asset.class);
+        verify(assetRepository, times(2)).save(argumentCaptor.capture());
+        List<Asset> assets = argumentCaptor.getAllValues();
+        assertEquals(25000, assets.get(0).getBalance());
+        assertEquals(15000, assets.get(1).getBalance());
     }
 
     @Test
@@ -345,6 +340,43 @@ class AssetSummaryServiceTest {
                 () -> assetSummaryService.getAsset(uid, email),
                 "No record found"
         );
+    }
+
+    @Test
+    void testCancelTransaction() {
+        String assetTo = "Credit Card";
+        String assetFrom = "Bank";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("reverse")
+                .date(LocalDate.now())
+                .category("Income")
+                .paymentFrom("Fund Transfer")
+                .amount(5000)
+                .paymentFrom(assetTo)
+                .paymentTo(assetFrom)
+                .build();
+        Asset bank = createAsset("Bank", "bank account", 30000.0);
+        AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
+        Asset creditCard = createAsset("Credit Card", "credit card", 10000.0);
+        AssetDTO creditCardDTO = new AssetDTO("Credit Card", "credit card", 10000.0, "Purple");
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("cancel", paymentDTO);
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.of(bank));
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.of(creditCard));
+        when(assetRepository.save(isA(Asset.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
+        when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
+        when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
+
+        assetSummaryService.cancelTransaction(map);
+        ArgumentCaptor<Asset> argumentCaptor = ArgumentCaptor.forClass(Asset.class);
+        verify(assetRepository, times(2)).save(argumentCaptor.capture());
+        List<Asset> assets = argumentCaptor.getAllValues();
+        assertEquals(5000, assets.get(0).getBalance());
+        assertEquals(35000, assets.get(1).getBalance());
     }
 
     private Asset createAsset(String name, String type, Double balance) {
