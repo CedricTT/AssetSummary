@@ -4,6 +4,7 @@ import com.bookkeeper.AssetSummary.model.dto.*;
 import com.bookkeeper.AssetSummary.model.entity.Asset;
 import com.bookkeeper.AssetSummary.model.exception.AssetAlreadyExisting;
 import com.bookkeeper.AssetSummary.model.exception.AssetNotFound;
+import com.bookkeeper.AssetSummary.model.exception.ForbiddenException;
 import com.bookkeeper.AssetSummary.model.exception.GlobalException;
 import com.bookkeeper.AssetSummary.model.mapper.AssetMapper;
 import com.bookkeeper.AssetSummary.repository.AssetRepository;
@@ -280,7 +281,7 @@ class AssetSummaryServiceTest {
                 .description("reverse")
                 .date(LocalDate.now())
                 .category("Income")
-                .paymentFrom("Fund Transfer")
+                .paymentMethod("Fund Transfer")
                 .amount(5000)
                 .paymentFrom(assetTo)
                 .paymentTo(assetFrom)
@@ -306,6 +307,76 @@ class AssetSummaryServiceTest {
         List<Asset> assets = argumentCaptor.getAllValues();
         assertEquals(25000, assets.get(0).getBalance());
         assertEquals(15000, assets.get(1).getBalance());
+    }
+
+    @Test
+    void testInvalidReverse() {
+        String assetTo = "Credit Card";
+        String assetFrom = "Bank";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("test")
+                .date(LocalDate.now())
+                .category("Repayment")
+                .paymentMethod("Fund Transfer")
+                .amount(10000.0)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
+                .build();
+        PaymentDTO reverse_null = PaymentDTO
+                .builder()
+                .description("reverse")
+                .date(LocalDate.now())
+                .category("Income")
+                .paymentMethod("Fund Transfer")
+                .amount(5000)
+                .paymentTo(assetFrom)
+                .build();
+        HashMap<String, Object> map_null = new HashMap<>();
+        map_null.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map_null.put("email", "test@gmail.com");
+        map_null.put("request_record", paymentDTO);
+        map_null.put("reverse_record", reverse_null);
+
+        assertThrows(
+                GlobalException.class,
+                () -> assetSummaryService.updateAsset(map_null),
+                "Invalid request"
+        );
+
+        PaymentDTO reverse_unequal = PaymentDTO
+                .builder()
+                .description("reverse")
+                .date(LocalDate.now())
+                .category("Income")
+                .paymentMethod("Fund Transfer")
+                .amount(5000)
+                .paymentTo(assetTo)
+                .paymentFrom(assetFrom)
+                .build();
+        HashMap<String, Object> map_unequal = new HashMap<>();
+        map_unequal.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map_unequal.put("email", "test@gmail.com");
+        map_unequal.put("request_record", paymentDTO);
+        map_unequal.put("reverse_record", reverse_unequal);
+
+        assertThrows(
+                GlobalException.class,
+                () -> assetSummaryService.updateAsset(map_unequal),
+                "Invalid reverse request"
+        );
+    }
+
+    @Test
+    void testMissingUserInfo() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("email", "test@gmail.com");
+
+        assertThrows(
+                ForbiddenException.class,
+                () -> assetSummaryService.updateAsset(map),
+                "Missing user info"
+        );
     }
 
     @Test

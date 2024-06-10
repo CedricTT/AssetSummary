@@ -43,9 +43,6 @@ public class AssetSummaryService {
 
         if(message.get("reverse_record") != null) {
             PaymentDTO reverse_record = (PaymentDTO) message.get("reverse_record");
-            if(reverse_record.getPaymentFrom() == null || reverse_record.getPaymentTo() == null)
-                throw new GlobalException("0203", "Invalid request");
-
             return reverseAsset(reverse_record, request, UID);
         }
 
@@ -100,6 +97,9 @@ public class AssetSummaryService {
     }
 
     private UpdatedAsset reverseAsset(PaymentDTO reverseRecord, PaymentDTO request, String UID) {
+
+        if(reverseRecord.getPaymentFrom() == null || reverseRecord.getPaymentTo() == null)
+            throw new GlobalException("0203", "Invalid request");
 
         if(!reverseRecord.getPaymentFrom().equals(request.getPaymentTo()))
             throw new GlobalException("0203", "Invalid reverse request");
