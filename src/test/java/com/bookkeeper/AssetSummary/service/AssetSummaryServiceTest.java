@@ -230,12 +230,9 @@ class AssetSummaryServiceTest {
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
 
-        UpdatedAsset expectResult = UpdatedAsset
-                .builder()
-                .transactionValue(100.0)
-                .build();
-
-        assertEquals(expectResult, assetSummaryService.updateAsset(map));
+        assetSummaryService.updateAsset(map);
+        verify(assetRepository).findByNameAndUID(assetFrom, uid);
+        verify(assetRepository).findByNameAndUID(assetTo, uid);
     }
 
     @Test

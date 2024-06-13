@@ -26,9 +26,8 @@ public class AssetSummaryService {
     @Autowired
     private AssetMapper assetMapper;
 
-    public UpdatedAsset updateAsset(HashMap<String, Object> message) {
+    public void updateAsset(HashMap<String, Object> message) {
 
-        UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -43,14 +42,14 @@ public class AssetSummaryService {
 
         if(message.get("reverse_record") != null) {
             PaymentDTO reverse_record = (PaymentDTO) message.get("reverse_record");
-            return reverseAsset(reverse_record, request, UID);
+            reverseAsset(reverse_record, request, UID);
+            return;
         }
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresent(asset -> {
             asset.setBalance(asset.getBalance() - (request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
             assetRepository.save(asset);
-            updatedAsset.assetFrom(assetMapper.convertToDto(asset));
             log.info("Updating asset: {}", asset.getName());
         });
 
@@ -58,13 +57,8 @@ public class AssetSummaryService {
         assetTo.ifPresent(asset -> {
             asset.setBalance(asset.getBalance() + (request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
             assetRepository.save(asset);
-            updatedAsset.assetTo(assetMapper.convertToDto(asset));
             log.info("Updating asset: {}", asset.getName());
         });
-
-        updatedAsset.transactionValue((request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
-
-        return updatedAsset.build();
     }
 
     public AssetDTO createAsset(String uid, String email, AssetDTO request) {
@@ -96,7 +90,7 @@ public class AssetSummaryService {
         return assetMapper.convertToDtoList(assetList);
     }
 
-    private UpdatedAsset reverseAsset(PaymentDTO reverseRecord, PaymentDTO request, String UID) {
+    private void reverseAsset(PaymentDTO reverseRecord, PaymentDTO request, String UID) {
 
         if(reverseRecord.getPaymentFrom() == null || reverseRecord.getPaymentTo() == null)
             throw new GlobalException("0203", "Invalid request");
@@ -104,13 +98,11 @@ public class AssetSummaryService {
         if(!reverseRecord.getPaymentFrom().equals(request.getPaymentTo()))
             throw new GlobalException("0203", "Invalid reverse request");
 
-        UpdatedAsset.UpdatedAssetBuilder updatedAsset = UpdatedAsset.builder();
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresentOrElse(asset -> {
             asset.setBalance(asset.getBalance() + reverseRecord.getAmount() - request.getAmount());
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
-            updatedAsset.assetFrom(assetMapper.convertToDto(asset));
         }, () -> {
             throw new GlobalException("0203", "Invalid reverse request");
         });
@@ -120,12 +112,9 @@ public class AssetSummaryService {
             asset.setBalance(asset.getBalance() - reverseRecord.getAmount() + request.getAmount());
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
-            updatedAsset.assetTo(assetMapper.convertToDto(asset));
         }, () -> {
             throw new GlobalException("0203", "Invalid reverse request");
         });
-
-        return updatedAsset.transactionValue(request.getAmount()).build();
     }
 
     public void cancelTransaction(HashMap<String, Object> message) {
