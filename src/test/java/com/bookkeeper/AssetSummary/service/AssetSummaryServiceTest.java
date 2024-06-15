@@ -131,7 +131,7 @@ class AssetSummaryServiceTest {
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(isA(Asset.class))).thenReturn(assetDTO);
 
-        assetSummaryService.updateAsset(map);
+        assetSummaryService.updateAssetWithMessageQueue(map);
         verify(assetRepository).save(argumentCaptor.capture());
         assertEquals(20000, argumentCaptor.getValue().getBalance());
     }
@@ -164,7 +164,7 @@ class AssetSummaryServiceTest {
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetMapper.convertToDto(isA(Asset.class))).thenReturn(assetDTO);
 
-        assetSummaryService.updateAsset(map);
+        assetSummaryService.updateAssetWithMessageQueue(map);
         verify(assetRepository).save(argumentCaptor.capture());
         assertEquals(40000, argumentCaptor.getValue().getBalance());
     }
@@ -200,7 +200,7 @@ class AssetSummaryServiceTest {
         when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
         when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
 
-        assetSummaryService.updateAsset(map);
+        assetSummaryService.updateAssetWithMessageQueue(map);
         verify(assetRepository, times(2)).save(argumentCaptor.capture());
         List<Asset> assets = argumentCaptor.getAllValues();
         assertEquals(30000, assets.get(0).getBalance());
@@ -230,7 +230,7 @@ class AssetSummaryServiceTest {
         when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
         when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
 
-        assetSummaryService.updateAsset(map);
+        assetSummaryService.updateAssetWithMessageQueue(map);
         verify(assetRepository).findByNameAndUID(assetFrom, uid);
         verify(assetRepository).findByNameAndUID(assetTo, uid);
     }
@@ -254,7 +254,7 @@ class AssetSummaryServiceTest {
         map.put("request_record", paymentDTO);
 
         assertThrows(GlobalException.class,
-                () -> assetSummaryService.updateAsset(map),
+                () -> assetSummaryService.updateAssetWithMessageQueue(map),
                 "Invalid request");
     }
 
@@ -298,7 +298,7 @@ class AssetSummaryServiceTest {
         when(assetMapper.convertToDto(bank)).thenReturn(bankDTO);
         when(assetMapper.convertToDto(creditCard)).thenReturn(creditCardDTO);
 
-        assetSummaryService.updateAsset(map);
+        assetSummaryService.updateAssetWithMessageQueue(map);
         ArgumentCaptor<Asset> argumentCaptor = ArgumentCaptor.forClass(Asset.class);
         verify(assetRepository, times(2)).save(argumentCaptor.capture());
         List<Asset> assets = argumentCaptor.getAllValues();
@@ -337,7 +337,7 @@ class AssetSummaryServiceTest {
 
         assertThrows(
                 GlobalException.class,
-                () -> assetSummaryService.updateAsset(map_null),
+                () -> assetSummaryService.updateAssetWithMessageQueue(map_null),
                 "Invalid request"
         );
 
@@ -359,7 +359,7 @@ class AssetSummaryServiceTest {
 
         assertThrows(
                 GlobalException.class,
-                () -> assetSummaryService.updateAsset(map_unequal),
+                () -> assetSummaryService.updateAssetWithMessageQueue(map_unequal),
                 "Invalid reverse request"
         );
     }
@@ -371,7 +371,7 @@ class AssetSummaryServiceTest {
 
         assertThrows(
                 ForbiddenException.class,
-                () -> assetSummaryService.updateAsset(map),
+                () -> assetSummaryService.updateAssetWithMessageQueue(map),
                 "Missing user info"
         );
     }

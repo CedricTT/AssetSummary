@@ -76,4 +76,27 @@ public class AssetSummaryController {
                 .build();
         return new ResponseEntity<>(assetResponse, HttpStatus.OK);
     }
+
+    @PutMapping
+    public ResponseEntity<BaseResponse> updateAsset(@RequestHeader("user-uid") String userUID,
+                                                    @RequestHeader("user-email") String userEmail,
+                                                    @Valid @RequestBody PaymentDTO request) {
+
+        if(userUID.isBlank() || userEmail.isBlank())
+            throw new ForbiddenException("999", "Missing user info");
+
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        log.info("Updating asset");
+
+        assetSummaryService.updateAsset(userUID, request);
+
+        BaseResponse response = BaseResponse.builder()
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
+    }
 }

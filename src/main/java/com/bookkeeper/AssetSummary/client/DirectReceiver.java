@@ -28,7 +28,7 @@ public class DirectReceiver {
             if(message.get("cancel") == null)
                 assetSummaryService.cancelTransaction(message);
 
-            assetSummaryService.updateAsset(message);
+            assetSummaryService.updateAssetWithMessageQueue(message);
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("Process message encounter exception: ", e);
