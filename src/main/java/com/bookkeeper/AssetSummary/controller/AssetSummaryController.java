@@ -90,7 +90,7 @@ public class AssetSummaryController {
 
         log.info("Updating asset");
 
-        assetSummaryService.updateAsset(userUID, request);
+        assetSummaryService.updateAsset(userUID, request, false);
 
         BaseResponse response = BaseResponse.builder()
                 .status("SUCCESS")

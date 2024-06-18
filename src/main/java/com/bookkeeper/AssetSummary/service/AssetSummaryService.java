@@ -42,7 +42,7 @@ public class AssetSummaryService {
             return;
         }
 
-        updateAsset(UID, request);
+        updateAsset(UID, request, true);
     }
 
     public AssetDTO createAsset(String uid, String email, AssetDTO request) {
@@ -116,7 +116,7 @@ public class AssetSummaryService {
             assetRepository.save(asset);
             log.info("Cancel transaction for asset: {}", asset.getName());
         }, () -> {
-            throw new GlobalException("0203", "Invalid reverse request");
+            throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
 
         Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
@@ -125,11 +125,11 @@ public class AssetSummaryService {
             assetRepository.save(asset);
             log.info("Cancel transaction for asset: {}", asset.getName());
         }, () -> {
-            throw new GlobalException("0203", "Invalid reverse request");
+            throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
     }
 
-    public void updateAsset(String userUID, PaymentDTO request) {
+    public void updateAsset(String userUID, PaymentDTO request, boolean fromMQ) {
 
         if(userUID == null || userUID.isEmpty())
             throw new ForbiddenException("999", "Missing user info");
@@ -138,17 +138,21 @@ public class AssetSummaryService {
             throw new GlobalException("0203", "Invalid request");
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), userUID);
-        assetFrom.ifPresent(asset -> {
+        assetFrom.ifPresentOrElse(asset -> {
             asset.setBalance(asset.getBalance() - (request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
             assetRepository.save(asset);
             log.info("Updating asset: {}", asset.getName());
+        }, () -> {
+            if(!fromMQ) throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
 
         Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), userUID);
-        assetTo.ifPresent(asset -> {
+        assetTo.ifPresentOrElse(asset -> {
             asset.setBalance(asset.getBalance() + (request.getEstimateValue() != null ? request.getEstimateValue() : request.getAmount()));
             assetRepository.save(asset);
             log.info("Updating asset: {}", asset.getName());
+        }, () -> {
+            if(!fromMQ) throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
     }
 }

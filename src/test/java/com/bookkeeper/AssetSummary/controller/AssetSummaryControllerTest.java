@@ -374,7 +374,7 @@ class AssetSummaryControllerTest {
                 .paymentMethod("FPS")
                 .build();
 
-        doNothing().when(assetSummaryService).updateAsset(uid, paymentDTO);
+        doNothing().when(assetSummaryService).updateAsset(uid, paymentDTO, false);
         mvc.perform(
                 put("/api/v1/asset")
                         .header("user-uid", uid)
@@ -425,7 +425,7 @@ class AssetSummaryControllerTest {
                 .paymentMethod("FPS")
                 .build();
 
-        doNothing().when(assetSummaryService).updateAsset(uid, paymentDTO);
+        doNothing().when(assetSummaryService).updateAsset(uid, paymentDTO, false);
 
         MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
                         .header("user-uid", uid)
@@ -462,7 +462,7 @@ class AssetSummaryControllerTest {
                 .paymentMethod("FPS")
                 .build();
 
-        doThrow(new AssetNotFound("0040", "Asset Not Found in given record")).when(assetSummaryService).updateAsset(uid, paymentDTO);
+        doThrow(new AssetNotFound("0040", "Asset Not Found in given record")).when(assetSummaryService).updateAsset(uid, paymentDTO,false);
 
         MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
                         .content(objectMapper.writeValueAsString(paymentDTO))

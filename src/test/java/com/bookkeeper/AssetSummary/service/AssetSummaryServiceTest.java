@@ -447,6 +447,36 @@ class AssetSummaryServiceTest {
         assertEquals(35000, assets.get(1).getBalance());
     }
 
+    @Test
+    void testCancelTransactionException() {
+        String assetTo = "Credit Card";
+        String assetFrom = "Bank";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        PaymentDTO paymentDTO = PaymentDTO
+                .builder()
+                .description("reverse")
+                .date(LocalDate.now())
+                .category("Income")
+                .paymentFrom("Fund Transfer")
+                .amount(5000)
+                .paymentFrom(assetTo)
+                .paymentTo(assetFrom)
+                .build();
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map.put("email", "test@gmail.com");
+        map.put("cancel", paymentDTO);
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
+        when(assetRepository.findByNameAndUID(assetTo, uid)).thenReturn(Optional.empty());
+
+        assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.cancelTransaction(map),
+                "Asset Not Found in given record"
+        );
+
+    }
+
     private Asset createAsset(String name, String type, Double balance) {
         Asset asset = new Asset();
         asset.setName(name);
