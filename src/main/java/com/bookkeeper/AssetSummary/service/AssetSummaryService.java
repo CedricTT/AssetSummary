@@ -88,7 +88,7 @@ public class AssetSummaryService {
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
         }, () -> {
-            throw new GlobalException("0203", "Invalid reverse request");
+            throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
 
         Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
@@ -97,7 +97,7 @@ public class AssetSummaryService {
             assetRepository.save(asset);
             log.info("Reverse asset: {}", asset.getName());
         }, () -> {
-            throw new GlobalException("0203", "Invalid reverse request");
+            throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
     }
 

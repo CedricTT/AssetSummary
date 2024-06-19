@@ -310,6 +310,7 @@ class AssetSummaryServiceTest {
     void testInvalidReverse() {
         String assetTo = "Credit Card";
         String assetFrom = "Bank";
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
         PaymentDTO paymentDTO = PaymentDTO
                 .builder()
                 .description("test")
@@ -330,7 +331,7 @@ class AssetSummaryServiceTest {
                 .paymentTo(assetFrom)
                 .build();
         HashMap<String, Object> map_null = new HashMap<>();
-        map_null.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map_null.put("uid", uid);
         map_null.put("email", "test@gmail.com");
         map_null.put("request_record", paymentDTO);
         map_null.put("reverse_record", reverse_null);
@@ -352,7 +353,7 @@ class AssetSummaryServiceTest {
                 .paymentFrom(assetFrom)
                 .build();
         HashMap<String, Object> map_unequal = new HashMap<>();
-        map_unequal.put("uid", "sdg3258rgdsjhgbj32dfgf8865");
+        map_unequal.put("uid", uid);
         map_unequal.put("email", "test@gmail.com");
         map_unequal.put("request_record", paymentDTO);
         map_unequal.put("reverse_record", reverse_unequal);
@@ -361,6 +362,28 @@ class AssetSummaryServiceTest {
                 GlobalException.class,
                 () -> assetSummaryService.updateAssetWithMessageQueue(map_unequal),
                 "Invalid reverse request"
+        );
+
+        PaymentDTO reverse = PaymentDTO
+                .builder()
+                .description("reverse")
+                .date(LocalDate.now())
+                .category("Income")
+                .paymentMethod("Fund Transfer")
+                .amount(5000)
+                .paymentFrom(assetTo)
+                .paymentTo(assetFrom)
+                .build();
+        HashMap<String, Object> map_notFound = new HashMap<>();
+        map_notFound.put("uid", uid);
+        map_notFound.put("email", "test@gmail.com");
+        map_notFound.put("request_record", paymentDTO);
+        map_notFound.put("reverse_record", reverse);
+        when(assetRepository.findByNameAndUID(assetFrom, uid)).thenReturn(Optional.empty());
+        assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.updateAssetWithMessageQueue(map_notFound),
+                "Asset Not Found in given record"
         );
     }
 
