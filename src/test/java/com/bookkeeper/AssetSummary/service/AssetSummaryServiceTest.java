@@ -500,6 +500,33 @@ class AssetSummaryServiceTest {
 
     }
 
+    @Test
+    void testDeleteAsset() {
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+
+        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0, "Purple");
+
+        Asset mappedAsset = createAsset("Bank","bank", 10000.0);
+
+        when(assetRepository.findByNameAndUID(assetDTO.getName(), uid)).thenReturn(Optional.of(mappedAsset));
+        assetSummaryService.deleteAsset(uid, assetDTO);
+        verify(assetRepository, times(1)).delete(isA(Asset.class));
+    }
+
+    @Test
+    void testDeleteAssetNotFound() {
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+
+        AssetDTO assetDTO = new AssetDTO("Bank","bank", 10000.0, "Purple");
+
+        when(assetRepository.findByNameAndUID(assetDTO.getName(), uid)).thenReturn(Optional.empty());
+        assertThrows(
+                AssetNotFound.class,
+                () -> assetSummaryService.deleteAsset(uid, assetDTO),
+                "Asset not found"
+        );
+    }
+
     private Asset createAsset(String name, String type, Double balance) {
         Asset asset = new Asset();
         asset.setName(name);

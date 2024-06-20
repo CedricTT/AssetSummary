@@ -155,4 +155,11 @@ public class AssetSummaryService {
             if(!fromMQ) throw new AssetNotFound("0202", "Asset Not Found in given record");
         });
     }
+
+    public void deleteAsset(String uid, AssetDTO request) {
+
+        assetRepository.findByNameAndUID(request.getName(), uid).ifPresentOrElse(asset -> assetRepository.delete(asset), () -> {
+            throw new AssetNotFound("0202","Asset not found");
+        });
+    }
 }
