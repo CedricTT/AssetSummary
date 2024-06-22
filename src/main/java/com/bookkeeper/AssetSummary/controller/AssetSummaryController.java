@@ -47,6 +47,28 @@ public class AssetSummaryController {
         return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
     }
 
+    @DeleteMapping
+    public ResponseEntity<BaseResponse> deleteAsset(@Valid @RequestBody AssetDTO request,
+                                                    @RequestHeader("user-uid") String userUID,
+                                                    @RequestHeader("user-email") String userEmail) {
+        if(userUID.isBlank() || userEmail.isBlank())
+            throw new ForbiddenException("999", "Missing user info");
+
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        log.info("Deleting new asset: {}", request.toString());
+
+        assetSummaryService.deleteAsset(userUID, request);
+
+        BaseResponse response = BaseResponse.builder()
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
+    }
+
     @GetMapping("/single")
     public ResponseEntity<SingleAssetResponse> getAssetByName(@RequestParam String assetName) {
         final HttpHeaders httpHeaders = new HttpHeaders();

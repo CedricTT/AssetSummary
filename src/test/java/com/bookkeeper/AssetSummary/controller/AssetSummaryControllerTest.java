@@ -189,6 +189,101 @@ class AssetSummaryControllerTest {
     }
 
     @Test
+    void testDeleteAsset() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+        mvc.perform(delete("/api/v1/asset")
+                        .header("user-uid", uid)
+                        .header("user-email", email)
+                        .content(mapper.writeValueAsString(assetDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testDeleteAssetValidation() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+
+        AssetDTO assetDTO_Missing = new AssetDTO(null, "bank", 10000.0, "Purple");
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
+
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
+        mvc.perform(delete("/api/v1/asset")
+                        .header("user-uid", uid)
+                        .header("user-email", email)
+                        .content(mapper.writeValueAsString(assetDTO_Missing))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(delete("/api/v1/asset")
+                        .content(mapper.writeValueAsString(assetDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testDeleteAssetException() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        AssetDTO assetDTO = new AssetDTO("Bank", "bank", 10000.0, "Purple");
+        String uid = "sdg3258rgdsjhgbj32dfgf8865";
+        String email = "test@gmail.com";
+
+        MvcResult forbiddenResult = mvc.perform(delete("/api/v1/asset")
+                        .header("user-uid", "")
+                        .header("user-email", email)
+                        .content(objectMapper.writeValueAsString(assetDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        ErrorResponse forbiddenResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.FORBIDDEN.value())
+                .code("999")
+                .message("Missing user info")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        String forbiddenResultBody = forbiddenResult.getResponse().getContentAsString();
+        String forbiddenResponseBody = objectMapper.writeValueAsString(forbiddenResponse);
+        assertThat(forbiddenResultBody).isEqualToIgnoringWhitespace(forbiddenResponseBody);
+
+        doThrow(new AssetNotFound("0202", "Asset not found")).when(assetSummaryService).deleteAsset(uid, assetDTO);
+
+        MvcResult mvcResult = mvc.perform(
+                        delete("/api/v1/asset")
+                                .header("user-uid", uid)
+                                .header("user-email", email)
+                                .content(objectMapper.writeValueAsString(assetDTO))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        ErrorResponse expectedResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .code("0202")
+                .message("Asset not found")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+        String expectedResponseBody = objectMapper.writeValueAsString(expectedResponse);
+        assertThat(actualResponseBody).isEqualToIgnoringWhitespace(expectedResponseBody);
+    }
+
+    @Test
     void testGetSingleAssetByAssetName() throws Exception {
         String assetName = "Bank";
         mvc.perform(
