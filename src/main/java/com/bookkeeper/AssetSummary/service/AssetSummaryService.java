@@ -45,7 +45,7 @@ public class AssetSummaryService {
         updateAsset(UID, request, true);
     }
 
-    public AssetDTO createAsset(String uid, String email, AssetDTO request) {
+    public void createAsset(String uid, String email, AssetDTO request) {
 
         assetRepository.findByNameAndUID(request.getName(), uid).ifPresent(s -> {
             throw new AssetAlreadyExisting("0200","Asset Already exist");
@@ -55,7 +55,7 @@ public class AssetSummaryService {
         asset.setUID(uid);
         asset.setEmail(email);
 
-        return assetMapper.convertToDto(assetRepository.save(asset));
+        assetMapper.convertToDto(assetRepository.save(asset));
     }
 
     public AssetDTO getAssetByName(String assetName) {

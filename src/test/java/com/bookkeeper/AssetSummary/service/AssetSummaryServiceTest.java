@@ -50,7 +50,7 @@ class AssetSummaryServiceTest {
         when(assetRepository.save(isA(Asset.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
         when(assetMapper.convertToDto(isA(Asset.class))).thenReturn(assetDTO);
 
-        assertEquals(assetDTO, assetSummaryService.createAsset(uid, email, assetDTO));
+        assetSummaryService.createAsset(uid, email, assetDTO);
         verify(assetRepository).save(argumentCaptor.capture());
         assertEquals(email, argumentCaptor.getValue().getEmail());
         assertEquals(uid, argumentCaptor.getValue().getUID());

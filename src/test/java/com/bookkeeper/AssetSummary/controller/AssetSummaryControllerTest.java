@@ -118,8 +118,6 @@ class AssetSummaryControllerTest {
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
-        when(assetSummaryService.createAsset(any(), any(), any())).thenReturn(assetDTO);
-
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/asset")
                         .header("user-uid", uid)
@@ -164,7 +162,7 @@ class AssetSummaryControllerTest {
         String forbiddenResponseBody = objectMapper.writeValueAsString(forbiddenResponse);
         assertThat(forbiddenResultBody).isEqualToIgnoringWhitespace(forbiddenResponseBody);
 
-        when(assetSummaryService.createAsset(uid, email, assetDTO)).thenThrow(new AssetAlreadyExisting("0030", "Asset already exist"));
+        doThrow(new AssetAlreadyExisting("0030", "Asset already exist")).when(assetSummaryService).createAsset(uid, email, assetDTO);
 
         MvcResult mvcResult = mvc.perform(
                 post("/api/v1/asset")
