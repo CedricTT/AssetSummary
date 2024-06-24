@@ -555,6 +555,26 @@ class AssetSummaryControllerTest {
                 .paymentMethod("FPS")
                 .build();
 
+        MvcResult forbiddenResult = mvc.perform(put("/api/v1/asset")
+                        .header("user-uid", "")
+                        .header("user-email", email)
+                        .content(objectMapper.writeValueAsString(paymentDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        ErrorResponse forbiddenResponse = ErrorResponse
+                .builder()
+                .HttpStatus(HttpStatus.FORBIDDEN.value())
+                .code("999")
+                .message("Missing user info")
+                .status("FAILED")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        String forbiddenResultBody = forbiddenResult.getResponse().getContentAsString();
+        String forbiddenResponseBody = objectMapper.writeValueAsString(forbiddenResponse);
+        assertThat(forbiddenResultBody).isEqualToIgnoringWhitespace(forbiddenResponseBody);
+
         doThrow(new AssetNotFound("0040", "Asset Not Found in given record")).when(assetSummaryService).updateAsset(uid, paymentDTO,false);
 
         MvcResult mvcResult = mvc.perform(put("/api/v1/asset")
