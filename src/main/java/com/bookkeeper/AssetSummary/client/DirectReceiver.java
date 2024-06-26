@@ -24,7 +24,11 @@ public class DirectReceiver {
                         Channel channel,
                         @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws IOException {
         try {
-            assetSummaryService.updateAsset(message);
+
+            if(message.get("cancel") == null)
+                assetSummaryService.cancelTransaction(message);
+
+            assetSummaryService.updateAssetWithMessageQueue(message);
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("Process message encounter exception: ", e);

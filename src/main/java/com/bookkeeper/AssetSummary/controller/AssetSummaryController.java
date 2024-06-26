@@ -24,24 +24,6 @@ public class AssetSummaryController {
 
     private final AssetSummaryService assetSummaryService;
 
-//    @PutMapping
-//    public ResponseEntity<UpdateAssetResponse> updateAsset(@Valid @RequestBody PaymentDTO request, @Valid @RequestHeader("user-uid") String UID) {
-//
-//        final HttpHeaders httpHeaders = new HttpHeaders();
-//        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-//
-//        UpdatedAsset updatedAsset = assetSummaryService.updateAsset(request, UID);
-//        UpdateAssetResponse updateAssetResponse = UpdateAssetResponse.builder()
-//                .assetFrom(updatedAsset.getAssetFrom())
-//                .assetTo(updatedAsset.getAssetTo())
-//                .transactionValue(updatedAsset.getTransactionValue())
-//                .requestTime(LocalDateTime.now().withNano(0))
-//                .status("SUCCESS")
-//                .build();
-//
-//        return new ResponseEntity<>(updateAssetResponse, httpHeaders, HttpStatus.OK);
-//    }
-
     @PostMapping
     public ResponseEntity<BaseResponse> createAsset(@Valid @RequestBody AssetDTO request,
                                                     @RequestHeader("user-uid") String userUID,
@@ -56,6 +38,28 @@ public class AssetSummaryController {
         log.info("Creating new asset: {}", request.toString());
 
         assetSummaryService.createAsset(userUID, userEmail, request);
+
+        BaseResponse response = BaseResponse.builder()
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<BaseResponse> deleteAsset(@Valid @RequestBody AssetDTO request,
+                                                    @RequestHeader("user-uid") String userUID,
+                                                    @RequestHeader("user-email") String userEmail) {
+        if(userUID.isBlank() || userEmail.isBlank())
+            throw new ForbiddenException("999", "Missing user info");
+
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        log.info("Deleting new asset: {}", request.toString());
+
+        assetSummaryService.deleteAsset(userUID, request);
 
         BaseResponse response = BaseResponse.builder()
                 .status("SUCCESS")
@@ -93,5 +97,28 @@ public class AssetSummaryController {
                 .requestTime(LocalDateTime.now().withNano(0))
                 .build();
         return new ResponseEntity<>(assetResponse, HttpStatus.OK);
+    }
+
+    @PutMapping
+    public ResponseEntity<BaseResponse> updateAsset(@RequestHeader("user-uid") String userUID,
+                                                    @RequestHeader("user-email") String userEmail,
+                                                    @Valid @RequestBody PaymentDTO request) {
+
+        if(userUID.isBlank() || userEmail.isBlank())
+            throw new ForbiddenException("999", "Missing user info");
+
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        log.info("Updating asset");
+
+        assetSummaryService.updateAsset(userUID, request, false);
+
+        BaseResponse response = BaseResponse.builder()
+                .status("SUCCESS")
+                .requestTime(LocalDateTime.now().withNano(0))
+                .build();
+
+        return new ResponseEntity<>(response, httpHeaders, HttpStatus.OK);
     }
 }

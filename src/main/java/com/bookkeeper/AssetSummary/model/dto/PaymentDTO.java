@@ -35,6 +35,11 @@ public class PaymentDTO {
     @NotNull
     private double amount;
 
+    private Double estimateValue;
+
+    @NotBlank
+    private String currency;
+
     @NotBlank
     private String paymentFrom;
 
