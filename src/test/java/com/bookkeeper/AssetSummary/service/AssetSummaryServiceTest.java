@@ -445,8 +445,8 @@ class AssetSummaryServiceTest {
                 .category("Income")
                 .paymentFrom("Fund Transfer")
                 .amount(5000)
-                .paymentFrom(assetTo)
-                .paymentTo(assetFrom)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
                 .build();
         Asset bank = createAsset("Bank", "bank account", 30000.0);
         AssetDTO bankDTO = new AssetDTO("Bank", "bank account", 30000.0, "Purple");
@@ -466,8 +466,8 @@ class AssetSummaryServiceTest {
         ArgumentCaptor<Asset> argumentCaptor = ArgumentCaptor.forClass(Asset.class);
         verify(assetRepository, times(2)).save(argumentCaptor.capture());
         List<Asset> assets = argumentCaptor.getAllValues();
-        assertEquals(5000, assets.get(0).getBalance());
-        assertEquals(35000, assets.get(1).getBalance());
+        assertEquals(35000, assets.get(0).getBalance());
+        assertEquals(5000, assets.get(1).getBalance());
     }
 
     @Test
@@ -482,8 +482,8 @@ class AssetSummaryServiceTest {
                 .category("Income")
                 .paymentFrom("Fund Transfer")
                 .amount(5000)
-                .paymentFrom(assetTo)
-                .paymentTo(assetFrom)
+                .paymentFrom(assetFrom)
+                .paymentTo(assetTo)
                 .build();
         HashMap<String, Object> map = new HashMap<>();
         map.put("uid", "sdg3258rgdsjhgbj32dfgf8865");

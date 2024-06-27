@@ -112,7 +112,7 @@ public class AssetSummaryService {
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresentOrElse(asset -> {
-            asset.setBalance(asset.getBalance() - request.getAmount());
+            asset.setBalance(asset.getBalance() + request.getAmount());
             assetRepository.save(asset);
             log.info("Cancel transaction for asset: {}", asset.getName());
         }, () -> {
@@ -121,7 +121,7 @@ public class AssetSummaryService {
 
         Optional<Asset> assetTo = assetRepository.findByNameAndUID(request.getPaymentTo(), UID);
         assetTo.ifPresentOrElse(asset -> {
-            asset.setBalance(asset.getBalance() + request.getAmount());
+            asset.setBalance(asset.getBalance() - request.getAmount());
             assetRepository.save(asset);
             log.info("Cancel transaction for asset: {}", asset.getName());
         }, () -> {
