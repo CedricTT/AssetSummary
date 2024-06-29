@@ -69,7 +69,7 @@ public class AssetSummaryService {
     public List<AssetDTO> getAsset(String userUID, String userEmail) {
 
         List<Asset> assetList = assetRepository.findByEmailAndUID(userEmail, userUID).orElseThrow(
-                () -> new AssetNotFound("0201", "No record found"));
+                () -> new AssetNotFound("0201", "No Assets found"));
 
         return assetMapper.convertToDtoList(assetList);
     }
@@ -77,10 +77,10 @@ public class AssetSummaryService {
     private void reverseAsset(PaymentDTO reverseRecord, PaymentDTO request, String UID) {
 
         if(reverseRecord.getPaymentFrom() == null || reverseRecord.getPaymentTo() == null)
-            throw new GlobalException("0203", "Invalid request");
+            throw new GlobalException("0210", "Invalid request");
 
         if(!reverseRecord.getPaymentFrom().equals(request.getPaymentTo()))
-            throw new GlobalException("0203", "Invalid reverse request");
+            throw new GlobalException("0211", "Invalid reverse request");
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), UID);
         assetFrom.ifPresentOrElse(asset -> {
@@ -135,7 +135,7 @@ public class AssetSummaryService {
             throw new ForbiddenException("999", "Missing user info");
 
         if(request == null || request.getPaymentFrom() == null || request.getPaymentTo() == null)
-            throw new GlobalException("0203", "Invalid request");
+            throw new GlobalException("0210", "Invalid request");
 
         Optional<Asset> assetFrom = assetRepository.findByNameAndUID(request.getPaymentFrom(), userUID);
         assetFrom.ifPresentOrElse(asset -> {
@@ -159,7 +159,7 @@ public class AssetSummaryService {
     public void deleteAsset(String uid, AssetDTO request) {
 
         assetRepository.findByNameAndUID(request.getName(), uid).ifPresentOrElse(asset -> assetRepository.delete(asset), () -> {
-            throw new AssetNotFound("0202","Asset not found");
+            throw new AssetNotFound("0202","Asset Not Found in given record");
         });
     }
 }

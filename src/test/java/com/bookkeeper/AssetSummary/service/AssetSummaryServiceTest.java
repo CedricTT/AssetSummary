@@ -429,7 +429,7 @@ class AssetSummaryServiceTest {
         assertThrows(
                 AssetNotFound.class,
                 () -> assetSummaryService.getAsset(uid, email),
-                "No record found"
+                "No Assets found"
         );
     }
 
@@ -523,7 +523,7 @@ class AssetSummaryServiceTest {
         assertThrows(
                 AssetNotFound.class,
                 () -> assetSummaryService.deleteAsset(uid, assetDTO),
-                "Asset not found"
+                "Asset Not Found in given record"
         );
     }
 
