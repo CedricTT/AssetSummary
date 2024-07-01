@@ -257,7 +257,7 @@ class AssetSummaryControllerTest {
         String forbiddenResponseBody = objectMapper.writeValueAsString(forbiddenResponse);
         assertThat(forbiddenResultBody).isEqualToIgnoringWhitespace(forbiddenResponseBody);
 
-        doThrow(new AssetNotFound("0202", "Asset not found")).when(assetSummaryService).deleteAsset(uid, assetDTO);
+        doThrow(new AssetNotFound("0202", "Asset Not Found in given record")).when(assetSummaryService).deleteAsset(uid, assetDTO);
 
         MvcResult mvcResult = mvc.perform(
                         delete("/api/v1/asset")
@@ -426,7 +426,7 @@ class AssetSummaryControllerTest {
         String uid = "sdg3258rgdsjhgbj32dfgf8865";
         String email = "test@gmail.com";
 
-        when(assetSummaryService.getAsset(uid, email)).thenThrow(new AssetNotFound("0050", "No record found"));
+        when(assetSummaryService.getAsset(uid, email)).thenThrow(new AssetNotFound("0050", "No Assets found"));
 
         MvcResult mvcResult = mvc.perform(
                         get("/api/v1/asset")
@@ -437,7 +437,7 @@ class AssetSummaryControllerTest {
         ErrorResponse expectedResponse = ErrorResponse
                 .builder()
                 .HttpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("No record found")
+                .message("No Assets found")
                 .status("FAILED")
                 .code("0050")
                 .requestTime(LocalDateTime.now().withNano(0))
